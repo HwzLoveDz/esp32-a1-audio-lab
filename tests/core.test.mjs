@@ -136,3 +136,10 @@ test('启动时缓存的旧提示符不能冒充 help 应答',async()=>{
  const port=fakePort((cmd,push)=>{if(cmd==='')push('esp32_a1 > ');else if(cmd==='help'){push('esp32_a1 > ');setTimeout(()=>push(REQUIRED.join('\n')+'\nesp32_a1 > '),5);}});
  const transport=new A1Serial();await transport.connect({requestPort:async()=>port});assert.equal(transport.ready,true);await transport.disconnect();
 });
+
+test('录音异步日志紧跟提示符时仍完成命令，不误超时',async()=>{
+ const port=fakePort((cmd,push)=>{if(cmd==='')push('esp32_a1 > ');else if(cmd==='help')push(REQUIRED.concat(['rec_on']).join('\n')+'\nesp32_a1 > ');else push('Recording user_str=web_unique\nesp32_a1 > I (1) A1_FILE: Rec start: 16000 Hz\n');});
+ const s=new A1Serial({timeout:100});try{await s.connect({requestPort:async()=>port});assert.match(await s.command('rec_on 1 web_unique'),/Recording user_str/);assert.equal(s.ready,true);}finally{await s.disconnect();}
+});
+
+ test('日志按完整行筛选，遥测与录音数据不会因串口分包混入导出记录',async()=>{const {serialLogLines}=await import('../core.mjs');assert.deepEqual(serialLogLines('esp32_a1 > @A1 {"type":"state"}\nD QUJDRA==\nFGET END\nRecording done: 4 bytes\n'),['FGET END','Recording done: 4 bytes']);});

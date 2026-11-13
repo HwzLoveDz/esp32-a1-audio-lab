@@ -36,3 +36,5 @@ All four PNG files are direct browser captures from this live-board session. No 
 ## Limits
 
 This is control/readback and digital PCM validation. Acoustic quality, calibrated analog gain, VAD speech-detection accuracy, microSD throughput and file-playback PCM are not certified by this run. The broader six-format / 18-reopen matrix remains the historical v0.4.1 result. Firmware, flash partitions and SD files were not changed.
+
+The SD recording and DAC file-playback gaps above were subsequently tested in [v0.6.0 validation](validation-v0.6.0.md); the scope of this historical run is unchanged.

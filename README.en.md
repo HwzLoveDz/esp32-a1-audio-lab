@@ -8,7 +8,7 @@ Configure an ESP32-A1 from its signal diagram: select a block, apply settings, r
 
 I built this workbench to keep audio routing, register controls and waveform inspection on one page. Draft settings stay separate from confirmed device responses.
 
-Version **v0.5.3** uses English on first launch and remembers your English/Chinese preference. It targets the **ESP32-A1 Codec + ESP32-S31 EV Board** running debug firmware v0.4.1. The latest live-board control and PCM check used web v0.5.0; v0.5.3 updates diagram navigation. The browser uses Web Serial to communicate with compatible `a1_cli` firmware. AC101S, AC102 and the previous sound-key firmware use different protocols.
+Version **v0.6.0** uses English on first launch and remembers your English/Chinese preference. It targets the **ESP32-A1 Codec + ESP32-S31 EV Board** running debug firmware v0.4.1. v0.6.0 adds live-board microSD recording/playback validation, including actual DAC playback PCM. The four screenshots below retain the v0.5.0 capture and tuning demonstrations. The browser uses Web Serial to communicate with compatible `a1_cli` firmware. AC101S, AC102 and the previous sound-key firmware use different protocols.
 
 ## Try the interface
 
@@ -35,7 +35,7 @@ Open `http://127.0.0.1:8773/ESP32-A1-Audio-Lab.html`. Stop the server with Ctrl+
 | Waveforms | Real PCM RMS, peak and min/max envelopes; linear slider and numeric input from 5 to 10000 ms |
 | Layout | Automatic vertical scaling, wheel-controlled manual scaling, Auto reset and resizable panels |
 | VAD / RE | ADC0 voice-activity detection and events; left/right DAC selection for the RE reference slot |
-| Board files | microSD recording, WAV playback, VAD-triggered recording and FIFO-save controls |
+| Board files | Unique recording names, selectable SD file list, WAV format checks, VAD-triggered recording and dedicated-mode FIFO saving |
 | Configuration | JSON import/export, restricted masked register writes and communication-log export |
 
 Five themes are included: light, graphite, ocean, pine and ember. Preferences stay in browser storage. The page loads no CDN resources, remote fonts or analytics.
@@ -57,6 +57,14 @@ Importing a configuration only changes the draft. Commands are sent when you app
 Use **detection only** for ordinary MIC capture: enable VAD and leave filtered output off. Four-channel capture remained dynamic before and after detection toggles, with RE both enabled and disabled.
 
 Filtered VAD output takes over the I²S stream; it is not four independent MIC channels. The UI requires waveform monitoring, recording/playback and ADC/DAC to be stopped before enabling this dedicated mode, and blocks ordinary MIC monitoring while it runs. Mixing it with an RE capture layout has produced fixed-valued slots and is not supported by the UI.
+
+### Record and play SD files
+
+Mount microSD from the ESP32-S31 block, enable ADC, then start recording. The file list refreshes after completion and selects the new recording. Read the list manually to choose an existing file. Every recording uses a unique name.
+
+Direct playback accepts mono or stereo PCM WAV. Set the shared sample rate and bit depth to match the file, then enable DAC; the page checks the format before playback. Extract playback channels on a computer from four-MIC-plus-RE recordings. Recording targets end at a board-buffer boundary rather than an exact sample count.
+
+FIFO saving requires mounted SD, enabled VAD and dedicated filtered output. Detection-only mode can still prepare triggered recording but cannot read that FIFO. Stop recording and playback before unmounting SD.
 
 ## On the board
 
@@ -82,7 +90,9 @@ DAC enable, volume readback and mute share one apply action. RE feeds a selected
 
 ## Validation
 
-v0.5.3 passes **51 host tests**, including right-button pan, wheel zoom, movement bounds and panel-aware fit/center checks.
+v0.6.0 passes **60 host tests**. Live-board checks with firmware v0.4.1 cover SD recording, CRC32 and WAV headers, actual stereo DAC playback PCM, simultaneous recording/playback and dedicated VAD FIFO saving. It also fixes a false timeout when asynchronous recording logs follow the command prompt in the same serial packet. See [v0.6.0 validation](docs/validation-v0.6.0.md).
+
+The earlier v0.5.3 **51 host tests** cover right-button pan, wheel zoom, movement bounds and panel-aware fit/center.
 
 The v0.5.0 update passed **43 host tests** and a new live-board check on v0.4.1 debug firmware: four independent MIC streams, +6 dB gain readback, mute/unmute restoration, detection-only VAD, DAC volume/mute, and a 10-second / 480000-frame window. The screenshots above were captured from this session. See [v0.5.0 validation](docs/validation-v0.5.0.md) for scope and limits.
 
@@ -96,7 +106,7 @@ The broader format/reopen matrix below is the earlier v0.4.1 baseline; it was no
 | Long windows | 5 / 50 / 500 / 1000 / 2501 / 10000 ms; 480000 sample frames for 10 seconds at 48 kHz |
 | Browser UI | Diagram, themes, panel sizing, automatic/manual scaling and draft-state checks |
 
-Hardware tests used production `core.mjs` / `serial.mjs` modules through a native serial adapter. Browser-native port permission selection, microSD file performance, DAC file-playback PCM and acoustic quality have not received the same validation coverage.
+Hardware tests use production `core.mjs` / `serial.mjs` through a native serial adapter; browser checks load the actual application code from the standalone HTML. Browser-native port permission selection, long-duration recording, acoustic measurements and VAD detection accuracy remain outside this validation scope.
 
 ## Troubleshooting
 

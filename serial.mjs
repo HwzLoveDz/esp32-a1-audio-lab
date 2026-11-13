@@ -1,4 +1,4 @@
-import {hasPrompt,stripTerminal,assertResponse,identifyCLI} from './core.mjs';
+import {takePrompt,assertResponse,identifyCLI} from './core.mjs';
 
 export class A1Serial {
  constructor({onData=()=>{},onDisconnect=()=>{},timeout=7000}={}){this.onData=onData;this.onDisconnect=onDisconnect;this.timeout=timeout;this.port=null;this.reader=null;this.writer=null;this.pending=null;this.ready=false;this.closed=true;this.session=0;this.lastLatencyMs=null;this.connecting=false;}
@@ -23,7 +23,7 @@ export class A1Serial {
     const chunk=decoder.decode(value,{stream:true});this.onData(chunk);
     const p=this.pending;
     if(p&&p.session===session){p.raw+=chunk;if(p.raw.length>262144){this.failPending(Error('设备应答超出 256 KiB，连接需重新建立'));this.ready=false;continue;}
-     if(hasPrompt(p.raw)){const clean=stripTerminal(p.raw);if(!p.accept||p.accept(clean)){clearTimeout(p.timer);this.pending=null;p.resolve(clean);}else if(/^esp32_a1\s*>\s*$/.test(clean.trim()))p.raw="";}
+     let part;while((part=takePrompt(p.raw))){if(!p.accept||p.accept(part.response)){clearTimeout(p.timer);this.pending=null;p.resolve(part.response);break;}p.raw=part.rest;}
     }
    }
   }catch(e){if(!this.closed&&session===this.session)this.failPending(Error('串口读取中断：'+e.message));}

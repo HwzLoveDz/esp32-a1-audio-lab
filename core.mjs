@@ -1,4 +1,4 @@
-export const VERSION='0.5.3';
+export const VERSION='0.6.0';
 export const RATES=[8000,11025,12000,16000,22050,24000,32000,44100,48000];
 export const DEFAULTS={rate:48000,bits:24,channels:4,gains:[0,0,0,0],adc:true,dac:true,adcMute:false,dacMute:false,volume:25,reference:false,referenceChannel:1,vad:false,vadOutput:false};
 export const REQUIRED=['iic_rd','adc_on','adc_off','dac_on','dac_off','adc_gain','dac_vol','adc_mute','dac_mute','set_rate','set_bits','set_ch','i2s_on','i2s_off','dac_ref','vad_on','vad_off','vad_status'];
@@ -24,6 +24,8 @@ export function validateConfig(input){
 export function newActual(){return {i2s:null,adc:null,dac:null,adcMute:null,dacMute:null,vad:null,vadOutput:null,rate:null,bits:null,channels:null,volume:null,gains:[null,null,null,null],reference:null,referenceChannel:null,sd:null,recording:null,playing:null,speech:null,triggers:null,registers:{},updated:0};}
 export const stripTerminal=s=>s.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g,'').replace(/\x1b\][^\x07]*(?:\x07|\x1b\\)/g,'').replace(/\r/g,'').replace(/[^\x08]\x08/g,'');
 export const hasPrompt=s=>/esp32_a1\s*>\s*$/.test(stripTerminal(s));
+export function serialLogLines(text){return text.split('\n').filter(line=>line.trim()&&!line.includes('@A1 ')&&!/(?:^|> )D [A-Za-z0-9+/=]+\s*$/.test(line));}
+export function takePrompt(s){const clean=stripTerminal(s),m=/(?:^|\n)esp32_a1[ \t]*>[ \t]*/.exec(clean);if(!m)return null;const end=m.index+m[0].length;return {response:clean.slice(0,end),rest:clean.slice(end)};}
 export function assertResponse(s){
  let clean=stripTerminal(s);
  // The vendor CLI explicitly accepts ESP_ERR_INVALID_STATE for this shared ISR service.
@@ -34,7 +36,7 @@ export function assertResponse(s){
 }
 export function identifyCLI(s){
  const clean=assertResponse(s);
- const supported=[...REQUIRED,'iic_wr','set_adc_mon','sdcard_on','sdcard_off','rec_prepare','rec_on','rec_off','play_on','play_off','vad_wav','help','web_status','web_scope','web_scope_window'];
+ const supported=[...REQUIRED,'iic_wr','set_adc_mon','sdcard_on','sdcard_off','rec_prepare','rec_on','rec_off','play_on','play_off','vad_wav','fls','fget','fsnr','help','web_status','web_scope','web_scope_window'];
  const found=new Set();
  // Only bind known CLI verbs; descriptions are not capabilities.
  for(const name of supported)if(new RegExp('(?:^|\\n)[ \\t]*'+name+'(?=[ \\t\\r\\n]|$)').test(clean))found.add(name);

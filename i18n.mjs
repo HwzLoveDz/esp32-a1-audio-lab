@@ -1,6 +1,28 @@
 // Source-language message catalogue. Protocol keys, raw logs and user input are
 // intentionally not translated. Locale changes never invoke device commands.
 const entries={
+ "FIFO 保存需要挂载 SD 并启用 VAD 专用滤波输出模式": "FIFO saving requires mounted SD and dedicated VAD filtered output",
+ "WAV 传输不完整": "Incomplete WAV transfer",
+ "WAV 传输长度无效": "Invalid WAV transfer length",
+ "WAV CRC32 核对失败": "WAV CRC32 verification failed",
+ "WAV 文件头无效": "Invalid WAV header",
+ "只支持 PCM WAV": "Only PCM WAV is supported",
+
+ "目标录音时长 / 秒": "Recording target / s",
+ "读取 SD 文件列表": "Read SD file list",
+ "尚无 WAV 文件；可先录制，或读取 SD 文件列表。": "No WAV files loaded. Record a clip or read the SD file list.",
+ "最近录音：": "Latest recording: ",
+ "每次录音使用独立文件名。直接回放请录制单声道或双声道 WAV；多通道文件需先导出选取声道。目标时长按板端缓冲区粒度结束，回放前会核对共享格式。": "Each recording gets a unique name. Direct playback requires mono or stereo WAV; extract channels from multichannel files first. Capture ends at a buffer boundary. Playback checks the shared format.",
+ "录音发生 RX 溢出，请检查通信记录；文件不能视为完整采样。": "Recording had RX overflows. Inspect the log; the file is not confirmed complete.",
+ "当前固件缺少 WAV 格式读取命令": "Firmware does not provide WAV format inspection",
+ "先挂载 microSD": "Mount microSD first",
+ "未收到完整的 SD 文件列表": "Incomplete SD file list",
+ "无法读取 WAV 格式": "Cannot read WAV format",
+ "回放需要单声道或双声道 WAV；多通道录音请先选择并导出播放声道": "Playback requires mono or stereo WAV; extract playback channels from multichannel recordings first",
+ "WAV 格式与当前共享格式不一致，请先在时钟模块调整采样率和位深": "WAV format differs from the shared format. Adjust sample rate and width in the clock block first",
+ "回放声道数与正在采集的通路不一致，请先停止 ADC 或调整通道数": "Playback channels differ from active capture. Stop ADC or adjust the channel count first",
+ "请先在 DAC 模块开启通路并写入设置": "Enable and apply the DAC path first",
+
  "自适应并居中框图": "Fit and center diagram",
  "按住右键拖动平移框图；滚轮缩放，Home 自适应并居中": "Hold the right mouse button to pan; wheel zooms, Home fits and centers",
  "草稿与已读取的设备值一致。": "Draft matches the confirmed device values.",
@@ -153,7 +175,7 @@ const entries={
  "检测到活动": "Activity detected",
  "无活动": "No activity",
  "ADC0 检测语音活动，经 A1 INT 通知 S31。录音触发需要先准备录音任务。": "ADC0 detects voice activity and signals S31 via A1 INT. Prepare recording before using VAD triggers.",
- "普通 MIC 采集请关闭“VAD 滤波输出”，仅启用检测。滤波输出会接管 I²S 数据，不再是四路独立 MIC；需先停止波形、录放和 ADC / DAC。FIFO 保存也不等于连续预录音。": "For independent MIC capture, enable detection only. Filtered VAD output takes over I²S; stop monitoring, recording/playback and ADC/DAC first. Saving the FIFO is not continuous pre-recording.",
+ "普通 MIC 采集请关闭“VAD 滤波输出”，仅启用检测。滤波输出会接管 I²S 数据，不再是四路独立 MIC；需先停止波形、录放和 ADC / DAC。FIFO 保存只在专用滤波输出模式可用，也不等于连续预录音。": "For independent MIC capture, enable detection only. Filtered VAD output takes over I²S; stop monitoring, recording/playback and ADC/DAC first. FIFO saves require dedicated filtered output and are not continuous pre-recording.",
  "录音与文件播放": "Recording & file playback",
  "录音和播放由开发板执行，文件保存在板上的 microSD。": "The board records and plays files stored on its microSD card.",
  "挂载 microSD": "Mount microSD",

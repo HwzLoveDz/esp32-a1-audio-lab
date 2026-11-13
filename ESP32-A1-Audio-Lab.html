@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ESP32-A1 Audio Lab · v0.5.3</title><style>:root{--ink:#1d333a;--muted:#758b91;--accent:#397f83;--teal:#38867d;--amber:#b57c3c;--purple:#7668ad;--blue:#497eae;--line:#e0e9e9;--bg:#f2f6f5;--mono:Consolas,'SFMono-Regular',monospace}*{box-sizing:border-box}body{margin:0;color:var(--ink);background:var(--bg);font-family:'Segoe UI','Microsoft YaHei',sans-serif;font-size:14px;line-height:1.65}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:default}button{border:1px solid var(--line);background:white;border-radius:7px;padding:10px 16px;color:var(--ink)}button:hover:not(:disabled){border-color:#92b8b1;background:#f5faf9}button:focus-visible,input:focus-visible,select:focus-visible,.graph-node:focus-visible{outline:3px solid #8fbdb5;outline-offset:3px}input,select{accent-color:var(--accent)}input[type=number],input[type=text],select{border:1px solid #d5e1e1;border-radius:6px;background:#fff;color:var(--ink);padding:9px 11px;min-width:0;width:100%}.primary{background:var(--accent);border-color:var(--accent);color:white;font-weight:600}.primary:hover:not(:disabled){background:#2d686b;color:white}.plain{border-color:transparent;background:transparent;color:#607d85}.icon{padding:4px 12px;font-size:23px;line-height:30px}.topbar{height:90px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:26px;padding:0 32px}.brand{display:flex;align-items:center;gap:14px;white-space:nowrap}.brand strong{font-size:27px;letter-spacing:-1px}.version{font:11px var(--mono);padding:3px 7px;border:1px solid #d4e2e1;border-radius:4px;color:#477780}.wave{height:43px;display:flex;gap:4px;align-items:center}.wave i{width:4px;background:#80bfbb;border-radius:3px;height:17px}.wave i:nth-child(2),.wave i:nth-child(4){height:30px}.wave i:nth-child(3){height:43px}.segment{display:flex;padding:4px;background:#eaf1ef;border:1px solid #dbe6e2;border-radius:9px;gap:3px}.segment button{padding:8px 16px;background:transparent;border:0;color:#72868b;border-radius:6px;white-space:nowrap}.segment button[aria-pressed=true]{background:white;color:#286b6e;box-shadow:0 1px 5px #253d4210;font-weight:600}.connection{display:flex;gap:16px;align-items:center;margin-left:auto}.connection>span{font-size:12px;color:#7d8b8e}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#a5aba6;margin-right:8px}.dot.ready{background:#398f70}.workspace-heading{display:flex;justify-content:space-between;align-items:center;padding:32px 42px 26px;gap:30px}.eyebrow{font:10px var(--mono);letter-spacing:2px;color:#78979c}.workspace-heading h1{font-size:28px;line-height:1.4;margin:9px 0 6px;letter-spacing:-1px}.workspace-heading p{margin:0;color:var(--muted);font-size:13px}.view-controls{text-align:right}.view-controls .segment{font-size:12px}.view-controls>div:last-child{font:11px var(--mono);color:#729092;margin-top:12px}.status-strip{padding:10px 42px;display:flex;align-items:center;gap:24px;border-top:1px solid #e8eeee;border-bottom:1px solid #e8eeee;background:#fbfdfc;font-size:11px;color:#66827f}.status-strip>span:nth-child(2){color:#869795;font-family:var(--mono)}.status-strip b{font-weight:400;color:#c9d7d3;margin:0 10px}.status-strip button{padding:3px 10px;margin-left:auto;font-size:12px}.graph-scroll{height:calc(100vh - 340px);min-height:420px;overflow:auto;background:#fff;overscroll-behavior:contain}#graph{min-width:1040px;width:100%;transform-origin:0 0}#audioGraph{display:block;width:100%;height:auto;max-height:none}.lane-label{font:600 14px 'Segoe UI','Microsoft YaHei',sans-serif;fill:#41665e}.graph-note{font:11px 'Segoe UI','Microsoft YaHei',sans-serif;fill:#87958e}.edge-halo{stroke:#fff;stroke-width:8;fill:none;stroke-linejoin:round}.edge-line{stroke:var(--path-color);stroke-width:2.7;fill:none;stroke-linejoin:round}.edge.disabled .edge-line{stroke:#8c9ba3;stroke-dasharray:6 5;stroke-width:1.6}.edge-label{font:11px var(--mono);fill:var(--path-color);paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round}.edge.disabled .edge-label{fill:#83969d}.edge-motion{stroke:#fff;stroke-opacity:.85;stroke-width:2;stroke-dasharray:3 21;fill:none;animation:travel 1.5s linear infinite;pointer-events:none}@keyframes travel{to{stroke-dashoffset:-48}}.graph-node{cursor:pointer;outline:none}.graph-node rect{fill:#f1f8f5;stroke:#a1cbbd;stroke-width:1.5}.graph-node.play rect{fill:#fcf7ee;stroke:#d9c4a8}.graph-node.vad rect{fill:#f6f3fb;stroke:#bbb0d2}.graph-node.reference rect{fill:#f1f6fa;stroke:#b2c5d8}.graph-node.off rect{fill:#fafbfb;stroke:#ced9dc;stroke-dasharray:5 4}.graph-node.selected rect,.graph-node:hover rect{stroke:#387d78;stroke-width:3;filter:drop-shadow(0 3px 7px #28595412)}.node-title{font:600 15px var(--mono);fill:#294e51}.node-sub{font:12px 'Segoe UI','Microsoft YaHei',sans-serif;fill:#6d8384}.graph-node.off .node-title{fill:#667b83}.state-mark{fill:#649c8d}.graph-node.off .state-mark{fill:#abb8bc}.graph-node.play .state-mark{fill:#b57c3c}.graph-node.vad.on .state-mark{fill:#7668ad}.legend{display:flex;align-items:center;gap:20px;padding:10px 26px;border-top:1px solid var(--line);background:#f9fcfa;min-height:57px;color:#718b8e;font-size:11px}.legend>span{white-space:nowrap}.line{display:inline-block;width:23px;border-top:2px solid var(--teal);vertical-align:middle;margin-right:5px}.line.amber{border-color:var(--amber)}.line.purple{border-color:var(--purple)}.line.blue{border-color:var(--blue)}.line.dashed{border-color:#8c9ba3;border-top-style:dashed}.legend-note{margin-left:auto;font-size:10px}.legend .icon{font-size:18px;line-height:20px}.legend .plain{padding:5px 11px}.inspector{position:fixed;top:110px;left:26px;width:402px;max-height:calc(100vh - 132px);display:flex;flex-direction:column;z-index:30;background:#fffffffa;border:1px solid #dbe6e3;box-shadow:0 12px 50px #1c3e3d22;border-radius:15px;backdrop-filter:blur(12px)}[hidden]{display:none!important}.inspector-heading{display:flex;justify-content:space-between;gap:20px;padding:24px 24px 21px;border-bottom:1px solid #e9efec;align-items:center}.inspector h2{font-size:25px;line-height:1.5;margin:7px 0 0;letter-spacing:-.5px}.inspector .eyebrow{font-size:9px}.panel-body{padding:22px 24px;overflow:auto;min-height:0}.panel-body p{color:#74888d;line-height:1.9;font-size:12px;margin:0 0 18px}.field{display:grid;gap:7px;margin-bottom:19px;color:#567379;font-size:12px}.field>span{display:flex;justify-content:space-between;gap:10px}.field output{font:12px var(--mono);color:#286d6e}.field input[type=range]{width:100%;margin:10px 0 0}.toggle{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;margin-bottom:8px;color:#496b71}.toggle input{width:17px;height:17px}.readout{border:1px solid #e1e9e6;border-radius:8px;padding:13px 15px;background:#f6f9f7;margin:16px 0;color:#5b7d78;font:11px/1.9 var(--mono);overflow-wrap:anywhere}.notice{border-left:3px solid #91b5aa;padding:11px 13px;background:#f0f6f2;font-size:12px;color:#648079;line-height:1.8;margin:15px 0}.panel-footer{border-top:1px solid #e4ece7;padding:17px 24px 22px;background:#f7fbf8;border-radius:0 0 15px 15px}.panel-footer>div{font-size:12px;color:#648077;line-height:1.8;white-space:pre-wrap;max-height:120px;overflow:auto;margin-bottom:12px}.panel-footer>div.error{color:#a75d39}.panel-footer .primary{width:100%;padding:12px}.button-row{display:flex;flex-wrap:wrap;gap:9px;margin:15px 0}.button-row button{flex:1;padding:9px 10px;font-size:12px}.channel-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.channel-grid button{font-family:var(--mono);font-size:12px}.micro-number{font:43px var(--mono);color:#397f7b;margin:5px 0 20px;line-height:1.2}.micro-number small{font:12px 'Segoe UI','Microsoft YaHei',sans-serif;color:#82918e}.tool-menu{position:absolute;right:26px;top:78px;z-index:40;border:1px solid #dce6e2;border-radius:9px;box-shadow:0 8px 30px #1b353820;background:#fff;padding:7px;min-width:190px}.tool-menu button{display:block;width:100%;border:0;text-align:left;background:transparent;font-size:12px;padding:10px 13px}.log{font:10px/1.8 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;max-height:420px;overflow:auto;background:#f4f7f7;padding:12px;border-radius:6px;color:#4b6268}.reg-list{display:grid;gap:4px;margin-top:14px;max-height:240px;overflow:auto}.reg-list button{display:flex;justify-content:space-between;gap:10px;font:10px var(--mono);text-align:left;padding:9px 8px}.reg-list span{overflow-wrap:anywhere}.reg-value{font:24px var(--mono);margin:15px 0}.muted{color:#7f9397;font-size:11px}.chip-tag{font:11px var(--mono);border:1px solid #dce6e2;padding:5px 9px;border-radius:5px;display:inline-block;color:#5c7b7d}.path-code{font:11px var(--mono);line-height:1.9;color:#4e777c;white-space:pre-wrap;background:#f3f7f5;padding:12px;border-radius:6px}.error-bar{color:#a75d39!important}.busy{cursor:wait}
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ESP32-A1 Audio Lab · v0.6.0</title><style>:root{--ink:#1d333a;--muted:#758b91;--accent:#397f83;--teal:#38867d;--amber:#b57c3c;--purple:#7668ad;--blue:#497eae;--line:#e0e9e9;--bg:#f2f6f5;--mono:Consolas,'SFMono-Regular',monospace}*{box-sizing:border-box}body{margin:0;color:var(--ink);background:var(--bg);font-family:'Segoe UI','Microsoft YaHei',sans-serif;font-size:14px;line-height:1.65}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:default}button{border:1px solid var(--line);background:white;border-radius:7px;padding:10px 16px;color:var(--ink)}button:hover:not(:disabled){border-color:#92b8b1;background:#f5faf9}button:focus-visible,input:focus-visible,select:focus-visible,.graph-node:focus-visible{outline:3px solid #8fbdb5;outline-offset:3px}input,select{accent-color:var(--accent)}input[type=number],input[type=text],select{border:1px solid #d5e1e1;border-radius:6px;background:#fff;color:var(--ink);padding:9px 11px;min-width:0;width:100%}.primary{background:var(--accent);border-color:var(--accent);color:white;font-weight:600}.primary:hover:not(:disabled){background:#2d686b;color:white}.plain{border-color:transparent;background:transparent;color:#607d85}.icon{padding:4px 12px;font-size:23px;line-height:30px}.topbar{height:90px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:26px;padding:0 32px}.brand{display:flex;align-items:center;gap:14px;white-space:nowrap}.brand strong{font-size:27px;letter-spacing:-1px}.version{font:11px var(--mono);padding:3px 7px;border:1px solid #d4e2e1;border-radius:4px;color:#477780}.wave{height:43px;display:flex;gap:4px;align-items:center}.wave i{width:4px;background:#80bfbb;border-radius:3px;height:17px}.wave i:nth-child(2),.wave i:nth-child(4){height:30px}.wave i:nth-child(3){height:43px}.segment{display:flex;padding:4px;background:#eaf1ef;border:1px solid #dbe6e2;border-radius:9px;gap:3px}.segment button{padding:8px 16px;background:transparent;border:0;color:#72868b;border-radius:6px;white-space:nowrap}.segment button[aria-pressed=true]{background:white;color:#286b6e;box-shadow:0 1px 5px #253d4210;font-weight:600}.connection{display:flex;gap:16px;align-items:center;margin-left:auto}.connection>span{font-size:12px;color:#7d8b8e}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#a5aba6;margin-right:8px}.dot.ready{background:#398f70}.workspace-heading{display:flex;justify-content:space-between;align-items:center;padding:32px 42px 26px;gap:30px}.eyebrow{font:10px var(--mono);letter-spacing:2px;color:#78979c}.workspace-heading h1{font-size:28px;line-height:1.4;margin:9px 0 6px;letter-spacing:-1px}.workspace-heading p{margin:0;color:var(--muted);font-size:13px}.view-controls{text-align:right}.view-controls .segment{font-size:12px}.view-controls>div:last-child{font:11px var(--mono);color:#729092;margin-top:12px}.status-strip{padding:10px 42px;display:flex;align-items:center;gap:24px;border-top:1px solid #e8eeee;border-bottom:1px solid #e8eeee;background:#fbfdfc;font-size:11px;color:#66827f}.status-strip>span:nth-child(2){color:#869795;font-family:var(--mono)}.status-strip b{font-weight:400;color:#c9d7d3;margin:0 10px}.status-strip button{padding:3px 10px;margin-left:auto;font-size:12px}.graph-scroll{height:calc(100vh - 340px);min-height:420px;overflow:auto;background:#fff;overscroll-behavior:contain}#graph{min-width:1040px;width:100%;transform-origin:0 0}#audioGraph{display:block;width:100%;height:auto;max-height:none}.lane-label{font:600 14px 'Segoe UI','Microsoft YaHei',sans-serif;fill:#41665e}.graph-note{font:11px 'Segoe UI','Microsoft YaHei',sans-serif;fill:#87958e}.edge-halo{stroke:#fff;stroke-width:8;fill:none;stroke-linejoin:round}.edge-line{stroke:var(--path-color);stroke-width:2.7;fill:none;stroke-linejoin:round}.edge.disabled .edge-line{stroke:#8c9ba3;stroke-dasharray:6 5;stroke-width:1.6}.edge-label{font:11px var(--mono);fill:var(--path-color);paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round}.edge.disabled .edge-label{fill:#83969d}.edge-motion{stroke:#fff;stroke-opacity:.85;stroke-width:2;stroke-dasharray:3 21;fill:none;animation:travel 1.5s linear infinite;pointer-events:none}@keyframes travel{to{stroke-dashoffset:-48}}.graph-node{cursor:pointer;outline:none}.graph-node rect{fill:#f1f8f5;stroke:#a1cbbd;stroke-width:1.5}.graph-node.play rect{fill:#fcf7ee;stroke:#d9c4a8}.graph-node.vad rect{fill:#f6f3fb;stroke:#bbb0d2}.graph-node.reference rect{fill:#f1f6fa;stroke:#b2c5d8}.graph-node.off rect{fill:#fafbfb;stroke:#ced9dc;stroke-dasharray:5 4}.graph-node.selected rect,.graph-node:hover rect{stroke:#387d78;stroke-width:3;filter:drop-shadow(0 3px 7px #28595412)}.node-title{font:600 15px var(--mono);fill:#294e51}.node-sub{font:12px 'Segoe UI','Microsoft YaHei',sans-serif;fill:#6d8384}.graph-node.off .node-title{fill:#667b83}.state-mark{fill:#649c8d}.graph-node.off .state-mark{fill:#abb8bc}.graph-node.play .state-mark{fill:#b57c3c}.graph-node.vad.on .state-mark{fill:#7668ad}.legend{display:flex;align-items:center;gap:20px;padding:10px 26px;border-top:1px solid var(--line);background:#f9fcfa;min-height:57px;color:#718b8e;font-size:11px}.legend>span{white-space:nowrap}.line{display:inline-block;width:23px;border-top:2px solid var(--teal);vertical-align:middle;margin-right:5px}.line.amber{border-color:var(--amber)}.line.purple{border-color:var(--purple)}.line.blue{border-color:var(--blue)}.line.dashed{border-color:#8c9ba3;border-top-style:dashed}.legend-note{margin-left:auto;font-size:10px}.legend .icon{font-size:18px;line-height:20px}.legend .plain{padding:5px 11px}.inspector{position:fixed;top:110px;left:26px;width:402px;max-height:calc(100vh - 132px);display:flex;flex-direction:column;z-index:30;background:#fffffffa;border:1px solid #dbe6e3;box-shadow:0 12px 50px #1c3e3d22;border-radius:15px;backdrop-filter:blur(12px)}[hidden]{display:none!important}.inspector-heading{display:flex;justify-content:space-between;gap:20px;padding:24px 24px 21px;border-bottom:1px solid #e9efec;align-items:center}.inspector h2{font-size:25px;line-height:1.5;margin:7px 0 0;letter-spacing:-.5px}.inspector .eyebrow{font-size:9px}.panel-body{padding:22px 24px;overflow:auto;min-height:0}.panel-body p{color:#74888d;line-height:1.9;font-size:12px;margin:0 0 18px}.field{display:grid;gap:7px;margin-bottom:19px;color:#567379;font-size:12px}.field>span{display:flex;justify-content:space-between;gap:10px}.field output{font:12px var(--mono);color:#286d6e}.field input[type=range]{width:100%;margin:10px 0 0}.toggle{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;margin-bottom:8px;color:#496b71}.toggle input{width:17px;height:17px}.readout{border:1px solid #e1e9e6;border-radius:8px;padding:13px 15px;background:#f6f9f7;margin:16px 0;color:#5b7d78;font:11px/1.9 var(--mono);overflow-wrap:anywhere}.notice{border-left:3px solid #91b5aa;padding:11px 13px;background:#f0f6f2;font-size:12px;color:#648079;line-height:1.8;margin:15px 0}.panel-footer{border-top:1px solid #e4ece7;padding:17px 24px 22px;background:#f7fbf8;border-radius:0 0 15px 15px}.panel-footer>div{font-size:12px;color:#648077;line-height:1.8;white-space:pre-wrap;max-height:120px;overflow:auto;margin-bottom:12px}.panel-footer>div.error{color:#a75d39}.panel-footer .primary{width:100%;padding:12px}.button-row{display:flex;flex-wrap:wrap;gap:9px;margin:15px 0}.button-row button{flex:1;padding:9px 10px;font-size:12px}.channel-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.channel-grid button{font-family:var(--mono);font-size:12px}.micro-number{font:43px var(--mono);color:#397f7b;margin:5px 0 20px;line-height:1.2}.micro-number small{font:12px 'Segoe UI','Microsoft YaHei',sans-serif;color:#82918e}.tool-menu{position:absolute;right:26px;top:78px;z-index:40;border:1px solid #dce6e2;border-radius:9px;box-shadow:0 8px 30px #1b353820;background:#fff;padding:7px;min-width:190px}.tool-menu button{display:block;width:100%;border:0;text-align:left;background:transparent;font-size:12px;padding:10px 13px}.log{font:10px/1.8 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;max-height:420px;overflow:auto;background:#f4f7f7;padding:12px;border-radius:6px;color:#4b6268}.reg-list{display:grid;gap:4px;margin-top:14px;max-height:240px;overflow:auto}.reg-list button{display:flex;justify-content:space-between;gap:10px;font:10px var(--mono);text-align:left;padding:9px 8px}.reg-list span{overflow-wrap:anywhere}.reg-value{font:24px var(--mono);margin:15px 0}.muted{color:#7f9397;font-size:11px}.chip-tag{font:11px var(--mono);border:1px solid #dce6e2;padding:5px 9px;border-radius:5px;display:inline-block;color:#5c7b7d}.path-code{font:11px var(--mono);line-height:1.9;color:#4e777c;white-space:pre-wrap;background:#f3f7f5;padding:12px;border-radius:6px}.error-bar{color:#a75d39!important}.busy{cursor:wait}
 @media(max-width:1100px){.topbar{padding:0 22px;gap:16px}.brand strong{font-size:23px}.connection{gap:8px}.connection>span{max-width:120px}.legend-note{display:none}.workspace-heading{padding:27px 30px}.status-strip{padding:9px 30px}.legend{gap:14px}.topbar .plain{padding:9px}.segment button{padding:8px 12px}}
 @media(max-width:760px){.topbar{height:auto;min-height:112px;padding:15px 16px;flex-wrap:wrap;gap:12px}.brand{gap:8px}.brand strong{font-size:23px}.wave{height:30px}.wave i:nth-child(3){height:33px}.connection{width:100%;justify-content:flex-end}.connection>span{margin-right:auto;max-width:none}.topbar>.segment{margin-left:auto;font-size:12px}.workspace-heading{padding:23px 20px;display:block}.workspace-heading h1{font-size:24px}.workspace-heading p{font-size:12px}.view-controls{display:flex;align-items:center;text-align:left;margin-top:18px;gap:20px;flex-wrap:wrap}.view-controls>div:last-child{margin:0}.status-strip{padding:9px 20px;gap:8px}.status-strip>span:nth-child(2){display:none}.graph-scroll{height:calc(100vh - 400px);min-height:410px}.inspector{left:12px;top:125px;width:calc(100vw - 24px);max-height:calc(100vh - 140px)}.inspector-heading{padding:18px 20px}.panel-body{padding:18px 20px}.legend{padding:10px 15px;gap:11px;flex-wrap:wrap}.legend>.plain{margin-left:auto}.legend>span:nth-child(5){display:none}.tool-menu{top:116px;right:15px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
@@ -119,16 +119,18 @@ html[lang=en] .micro-number{font-size:28px;overflow-wrap:anywhere;line-height:1.
 #audioGraph{height:100%;width:100%}
 .fit-view{display:inline-flex;align-items:center;justify-content:center;width:38px;height:33px;padding:5px!important;flex:none}
 .fit-view[aria-pressed=true]{color:var(--accent);border-color:var(--accent);background:var(--raised,#edf4f2)}
+
+.sd-files{display:grid;gap:6px;margin:12px 0}.media-file{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;width:100%;padding:9px;font:10px var(--mono);background:var(--raised,#f5f8f7);overflow-wrap:anywhere}.media-file span{min-width:0}.media-file small{white-space:nowrap;color:var(--muted)}.media-file[aria-pressed=true]{border-color:var(--accent);color:var(--accent)}
 </style></head>
 <body><script>try{const t=localStorage.getItem('a1-lab-theme');if(['graphite','ocean','pine','ember'].includes(t))document.documentElement.dataset.theme=t;}catch{}</script>
-<header class="topbar"><div class="brand"><span class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><strong>A1 Audio Lab</strong><span class="version">v0.5.3</span></div><div class="segment" aria-label="框图复杂度"><button data-mode="simple" aria-pressed="true">简易</button><button data-mode="pro" aria-pressed="false">专业</button></div><label class="theme-picker"><span>主题</span><select id="themeSelect" aria-label="界面主题"><option value="light">浅色</option><option value="graphite">石墨</option><option value="ocean">深海</option><option value="pine">松墨</option><option value="ember">暖夜</option></select></label><label class="language-picker"><span>语言</span><select id="languageSelect" aria-label="Language / 语言" data-no-i18n><option value="zh">简体中文</option><option value="en">English</option></select></label><div class="connection"><span id="connectionText"><i class="dot"></i>未连接设备</span><button class="primary" id="connect">连接开发板</button><button class="plain" id="tools">文件与工具 ···</button></div></header>
+<header class="topbar"><div class="brand"><span class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><strong>A1 Audio Lab</strong><span class="version">v0.6.0</span></div><div class="segment" aria-label="框图复杂度"><button data-mode="simple" aria-pressed="true">简易</button><button data-mode="pro" aria-pressed="false">专业</button></div><label class="theme-picker"><span>主题</span><select id="themeSelect" aria-label="界面主题"><option value="light">浅色</option><option value="graphite">石墨</option><option value="ocean">深海</option><option value="pine">松墨</option><option value="ember">暖夜</option></select></label><label class="language-picker"><span>语言</span><select id="languageSelect" aria-label="Language / 语言" data-no-i18n><option value="zh">简体中文</option><option value="en">English</option></select></label><div class="connection"><span id="connectionText"><i class="dot"></i>未连接设备</span><button class="primary" id="connect">连接开发板</button><button class="plain" id="tools">文件与工具 ···</button></div></header>
 <main><section class="workspace-heading"><div><span class="eyebrow">ESP32-A1 / AUDIO WORKBENCH</span><h1>四路采集，双声道播放。</h1><p>点击模块设置或开始监测，设备状态自动同步。</p></div><div class="view-controls"><div class="segment" aria-label="状态来源"><button data-source="draft" aria-pressed="true">配置草稿</button><button data-source="device" aria-pressed="false">设备应答</button></div><div id="formatText">48.0 kHz · 24 bit · 4 MIC</div></div></section>
 <div class="status-strip"><span id="sourceNote">草稿预览 · 尚未下发</span><span id="deviceMeta">固件：未读取</span><button id="pendingDraftButton" class="draft-count" disabled>待写入 <b id="pendingCount">0</b></button><span id="liveSync" role="status">设备未连接</span><button id="refresh" class="plain">读取配置</button></div>
 <section id="workspaceNotice" class="workspace-notice" hidden aria-live="polite"><div><strong id="workspaceStatus"></strong><span id="workspaceHint"></span></div><button id="workspaceLog" class="plain" hidden>查看记录</button></section><div class="graph-scroll" id="graphScroll" tabindex="0" role="region" aria-label="按住右键拖动平移框图；滚轮缩放，Home 自适应并居中" title="按住右键拖动平移框图；滚轮缩放，Home 自适应并居中"><div id="graph"></div></div>
 <section id="wavePanel" class="wave-panel" hidden aria-label="实时音频波形"><div class="resize-handle resize-left" role="separator" aria-orientation="vertical" aria-label="调整波形窗口宽度" tabindex="0" data-resize="wave"></div><div class="wave-head"><div><span class="wave-live-dot"></span><span class="eyebrow">LIVE PCM</span><h3 id="waveTitle">实板波形</h3></div><select id="waveChannel" aria-label="波形通道"></select><button id="stopWave" class="plain">停止</button><button id="closeWave" class="icon" aria-label="关闭波形">×</button></div><div class="wave-time-control"><label for="timeWindow">时间窗 <output id="timeWindowValue">50 ms</output></label><input id="timeWindow" type="range" min="5" max="10000" step="1" value="50" aria-label="波形时间范围（毫秒）"><label class="time-number"><input id="timeNumber" type="number" min="5" max="10000" step="1" value="50" aria-label="时间窗数值（毫秒）"><span>ms</span></label></div><div class="wave-reading"><strong id="waveLevel">— dBFS</strong><span>RMS · 数字满量程</span></div><div class="wave-scale-row"><div id="waveScale" class="wave-scale">纵轴自动</div><button id="autoScale" class="plain" aria-pressed="true" title="恢复纵轴自动缩放">自动</button><span>滚轮缩放</span></div><canvas id="waveCanvas" width="800" height="180" aria-label="实板 PCM 波形"></canvas><div class="wave-time-axis"><span id="timeAxisStart">−50 ms</span><span>实时</span></div><div id="waveMeta">点击开始后读取实板 PCM</div></section><aside id="inspector" class="inspector" hidden aria-label="模块设置"><div class="resize-handle resize-right" role="separator" aria-orientation="vertical" aria-label="调整设置窗口宽度" tabindex="0" data-resize="inspector"></div><div class="inspector-heading"><div><span class="eyebrow" id="panelCategory">MODULE SETTINGS</span><h2 id="panelTitle"></h2></div><button class="icon" id="closePanel" aria-label="关闭设置">×</button></div><section id="moduleDraft" class="module-draft" hidden></section><div id="panelBody" class="panel-body"></div><div class="panel-footer"><div id="operationStatus" role="status" aria-live="polite">修改保存在草稿中，写入需要连接兼容的 a1_cli。</div><button id="apply" class="primary" hidden>写入此模块</button></div></aside>
 <div id="toolMenu" class="tool-menu" hidden><button id="showConnection">连接与板卡</button><button id="showRegisters">寄存器</button><button id="showLog">通信记录</button><button id="exportConfig">导出配置</button><button id="importConfig">导入配置</button><button id="exportLog">导出通信记录</button></div>
 <footer class="legend"><span><i class="line teal"></i>采集</span><span><i class="line amber"></i>播放</span><span><i class="line purple"></i>VAD</span><span><i class="line blue"></i>回采</span><span><i class="line dashed"></i>未启用 / 未知</span><label class="trace-option"><input id="highlightPath" type="checkbox" checked>选中链路高亮</label><span class="legend-note">链路跟随设备状态；波形来自实板 PCM。</span><button class="icon" id="zoomOut" aria-label="缩小框图">−</button><span id="zoomText">100%</span><button class="icon" id="zoomIn" aria-label="放大框图">+</button><button class="icon fit-view" id="fit" aria-label="自适应并居中框图" title="自适应并居中框图" aria-pressed="true"><svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M8 8h8v8H8z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button></footer>
-</main><input type="file" id="configFile" accept="application/json,.json" hidden><script type="module">const {VERSION,RATES,DEFAULTS,REQUIRED,REGISTERS,hex,clone,validateConfig,newActual,stripTerminal,hasPrompt,assertResponse,identifyCLI,readRegisters,parseState,planFor,validateStep,registerWritePlan,maskedWrite,routeState,telemetry,applySnapshot,validateWave,mergeDeviceConfig,zoomVertical}=(()=>{const VERSION='0.5.3';
+</main><input type="file" id="configFile" accept="application/json,.json" hidden><script type="module">const {VERSION,RATES,DEFAULTS,REQUIRED,REGISTERS,hex,clone,validateConfig,newActual,stripTerminal,hasPrompt,serialLogLines,takePrompt,assertResponse,identifyCLI,readRegisters,parseState,planFor,validateStep,registerWritePlan,maskedWrite,routeState,telemetry,applySnapshot,validateWave,mergeDeviceConfig,zoomVertical}=(()=>{const VERSION='0.6.0';
 const RATES=[8000,11025,12000,16000,22050,24000,32000,44100,48000];
 const DEFAULTS={rate:48000,bits:24,channels:4,gains:[0,0,0,0],adc:true,dac:true,adcMute:false,dacMute:false,volume:25,reference:false,referenceChannel:1,vad:false,vadOutput:false};
 const REQUIRED=['iic_rd','adc_on','adc_off','dac_on','dac_off','adc_gain','dac_vol','adc_mute','dac_mute','set_rate','set_bits','set_ch','i2s_on','i2s_off','dac_ref','vad_on','vad_off','vad_status'];
@@ -154,6 +156,8 @@ function validateConfig(input){
 function newActual(){return {i2s:null,adc:null,dac:null,adcMute:null,dacMute:null,vad:null,vadOutput:null,rate:null,bits:null,channels:null,volume:null,gains:[null,null,null,null],reference:null,referenceChannel:null,sd:null,recording:null,playing:null,speech:null,triggers:null,registers:{},updated:0};}
 const stripTerminal=s=>s.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g,'').replace(/\x1b\][^\x07]*(?:\x07|\x1b\\)/g,'').replace(/\r/g,'').replace(/[^\x08]\x08/g,'');
 const hasPrompt=s=>/esp32_a1\s*>\s*$/.test(stripTerminal(s));
+function serialLogLines(text){return text.split('\n').filter(line=>line.trim()&&!line.includes('@A1 ')&&!/(?:^|> )D [A-Za-z0-9+/=]+\s*$/.test(line));}
+function takePrompt(s){const clean=stripTerminal(s),m=/(?:^|\n)esp32_a1[ \t]*>[ \t]*/.exec(clean);if(!m)return null;const end=m.index+m[0].length;return {response:clean.slice(0,end),rest:clean.slice(end)};}
 function assertResponse(s){
  let clean=stripTerminal(s);
  // The vendor CLI explicitly accepts ESP_ERR_INVALID_STATE for this shared ISR service.
@@ -164,7 +168,7 @@ function assertResponse(s){
 }
 function identifyCLI(s){
  const clean=assertResponse(s);
- const supported=[...REQUIRED,'iic_wr','set_adc_mon','sdcard_on','sdcard_off','rec_prepare','rec_on','rec_off','play_on','play_off','vad_wav','help','web_status','web_scope','web_scope_window'];
+ const supported=[...REQUIRED,'iic_wr','set_adc_mon','sdcard_on','sdcard_off','rec_prepare','rec_on','rec_off','play_on','play_off','vad_wav','fls','fget','fsnr','help','web_status','web_scope','web_scope_window'];
  const found=new Set();
  // Only bind known CLI verbs; descriptions are not capabilities.
  for(const name of supported)if(new RegExp('(?:^|\\n)[ \\t]*'+name+'(?=[ \\t\\r\\n]|$)').test(clean))found.add(name);
@@ -308,7 +312,7 @@ function zoomVertical(min,max,delta,anchor=.5){
  return {min:upper-range,max:upper};
 }
 
-return {VERSION,RATES,DEFAULTS,REQUIRED,REGISTERS,hex,clone,validateConfig,newActual,stripTerminal,hasPrompt,assertResponse,identifyCLI,readRegisters,parseState,planFor,validateStep,registerWritePlan,maskedWrite,routeState,telemetry,applySnapshot,validateWave,mergeDeviceConfig,zoomVertical};})();
+return {VERSION,RATES,DEFAULTS,REQUIRED,REGISTERS,hex,clone,validateConfig,newActual,stripTerminal,hasPrompt,serialLogLines,takePrompt,assertResponse,identifyCLI,readRegisters,parseState,planFor,validateStep,registerWritePlan,maskedWrite,routeState,telemetry,applySnapshot,validateWave,mergeDeviceConfig,zoomVertical};})();
 const {FIELD_LABELS,draftValue,deviceValue,editDraft,pendingDraft,moduleFields,revertDraft,formatSetting,explainFailure,traceConnections}=(()=>{
 const FIELD_LABELS={rate:'采样率',bits:'音频位深',channels:'输入通道',adc:'ADC 通路',adcMute:'ADC 静音',dac:'DAC 通路',dacMute:'DAC 静音',volume:'播放音量',reference:'DAC 回采',referenceChannel:'参考声道',vad:'VAD 检测',vadOutput:'VAD 滤波输出',gain0:'ADC0 增益',gain1:'ADC1 增益',gain2:'ADC2 增益',gain3:'ADC3 增益'};
 
@@ -376,6 +380,28 @@ return {FIELD_LABELS,draftValue,deviceValue,editDraft,pendingDraft,moduleFields,
 const {getLanguage,translate,preferredLanguage,setLanguage,installLanguage}=(()=>{// Source-language message catalogue. Protocol keys, raw logs and user input are
 // intentionally not translated. Locale changes never invoke device commands.
 const entries={
+ "FIFO 保存需要挂载 SD 并启用 VAD 专用滤波输出模式": "FIFO saving requires mounted SD and dedicated VAD filtered output",
+ "WAV 传输不完整": "Incomplete WAV transfer",
+ "WAV 传输长度无效": "Invalid WAV transfer length",
+ "WAV CRC32 核对失败": "WAV CRC32 verification failed",
+ "WAV 文件头无效": "Invalid WAV header",
+ "只支持 PCM WAV": "Only PCM WAV is supported",
+
+ "目标录音时长 / 秒": "Recording target / s",
+ "读取 SD 文件列表": "Read SD file list",
+ "尚无 WAV 文件；可先录制，或读取 SD 文件列表。": "No WAV files loaded. Record a clip or read the SD file list.",
+ "最近录音：": "Latest recording: ",
+ "每次录音使用独立文件名。直接回放请录制单声道或双声道 WAV；多通道文件需先导出选取声道。目标时长按板端缓冲区粒度结束，回放前会核对共享格式。": "Each recording gets a unique name. Direct playback requires mono or stereo WAV; extract channels from multichannel files first. Capture ends at a buffer boundary. Playback checks the shared format.",
+ "录音发生 RX 溢出，请检查通信记录；文件不能视为完整采样。": "Recording had RX overflows. Inspect the log; the file is not confirmed complete.",
+ "当前固件缺少 WAV 格式读取命令": "Firmware does not provide WAV format inspection",
+ "先挂载 microSD": "Mount microSD first",
+ "未收到完整的 SD 文件列表": "Incomplete SD file list",
+ "无法读取 WAV 格式": "Cannot read WAV format",
+ "回放需要单声道或双声道 WAV；多通道录音请先选择并导出播放声道": "Playback requires mono or stereo WAV; extract playback channels from multichannel recordings first",
+ "WAV 格式与当前共享格式不一致，请先在时钟模块调整采样率和位深": "WAV format differs from the shared format. Adjust sample rate and width in the clock block first",
+ "回放声道数与正在采集的通路不一致，请先停止 ADC 或调整通道数": "Playback channels differ from active capture. Stop ADC or adjust the channel count first",
+ "请先在 DAC 模块开启通路并写入设置": "Enable and apply the DAC path first",
+
  "自适应并居中框图": "Fit and center diagram",
  "按住右键拖动平移框图；滚轮缩放，Home 自适应并居中": "Hold the right mouse button to pan; wheel zooms, Home fits and centers",
  "草稿与已读取的设备值一致。": "Draft matches the confirmed device values.",
@@ -528,7 +554,7 @@ const entries={
  "检测到活动": "Activity detected",
  "无活动": "No activity",
  "ADC0 检测语音活动，经 A1 INT 通知 S31。录音触发需要先准备录音任务。": "ADC0 detects voice activity and signals S31 via A1 INT. Prepare recording before using VAD triggers.",
- "普通 MIC 采集请关闭“VAD 滤波输出”，仅启用检测。滤波输出会接管 I²S 数据，不再是四路独立 MIC；需先停止波形、录放和 ADC / DAC。FIFO 保存也不等于连续预录音。": "For independent MIC capture, enable detection only. Filtered VAD output takes over I²S; stop monitoring, recording/playback and ADC/DAC first. Saving the FIFO is not continuous pre-recording.",
+ "普通 MIC 采集请关闭“VAD 滤波输出”，仅启用检测。滤波输出会接管 I²S 数据，不再是四路独立 MIC；需先停止波形、录放和 ADC / DAC。FIFO 保存只在专用滤波输出模式可用，也不等于连续预录音。": "For independent MIC capture, enable detection only. Filtered VAD output takes over I²S; stop monitoring, recording/playback and ADC/DAC first. FIFO saves require dedicated filtered output and are not continuous pre-recording.",
  "录音与文件播放": "Recording & file playback",
  "录音和播放由开发板执行，文件保存在板上的 microSD。": "The board records and plays files stored on its microSD card.",
  "挂载 microSD": "Mount microSD",
@@ -825,7 +851,7 @@ class A1Serial {
     const chunk=decoder.decode(value,{stream:true});this.onData(chunk);
     const p=this.pending;
     if(p&&p.session===session){p.raw+=chunk;if(p.raw.length>262144){this.failPending(Error('设备应答超出 256 KiB，连接需重新建立'));this.ready=false;continue;}
-     if(hasPrompt(p.raw)){const clean=stripTerminal(p.raw);if(!p.accept||p.accept(clean)){clearTimeout(p.timer);this.pending=null;p.resolve(clean);}else if(/^esp32_a1\s*>\s*$/.test(clean.trim()))p.raw="";}
+     let part;while((part=takePrompt(p.raw))){if(!p.accept||p.accept(part.response)){clearTimeout(p.timer);this.pending=null;p.resolve(part.response);break;}p.raw=part.rest;}
     }
    }
   }catch(e){if(!this.closed&&session===this.session)this.failPending(Error('串口读取中断：'+e.message));}
@@ -1061,7 +1087,57 @@ class GraphViewport {
 }
 
 return {openDiagramRect,boundDiagram,fitDiagram,zoomDiagram,GraphViewport};})();
+const {recordingTag,validWavPath,parseFileList,wavInfo,wavTransferInfo,playbackGuard,mediaEvent,canSaveFifo}=(()=>{// SD metadata and playback guards. Does not write to the device or card.
+let sequence=0;
+function recordingTag(prefix='web',now=Date.now()){
+ return `${prefix}_${now.toString(36)}_${(++sequence).toString(36)}`;
+}
+function validWavPath(path){return typeof path==='string'&&/^\/sdcard\/[a-z\d_/-]+\.wav$/i.test(path)&&!path.includes('..');}
+function parseFileList(text){
+ if(!/^FLS BEGIN \/sdcard\s*$/m.test(text)||!/^FLS END \d+\s*$/m.test(text))throw Error('未收到完整的 SD 文件列表');
+ return [...text.matchAll(/^E (\d+) ([^\r\n]+)$/gm)].map(m=>({bytes:Number(m[1]),path:'/sdcard/'+m[2].trim()})).filter(f=>Number.isSafeInteger(f.bytes)&&f.bytes>=0&&validWavPath(f.path));
+}
+function wavInfo(text){
+ const m=text.match(/ch0\s+(\d+) Hz (\d+)-bit (\d+)ch, (\d+) frames analyzed/);
+ if(!m)throw Error('无法读取 WAV 格式');return {rate:+m[1],bits:+m[2],channels:+m[3]};
+}
+function wavTransferInfo(text){
+ const begin=text.match(/FGET BEGIN (\d+) ([0-9a-f]{1,8}) /i);
+ if(!begin||!/^FGET END\s*$/m.test(text))throw Error('WAV 传输不完整');
+ const parts=[...text.matchAll(/^D ([A-Za-z0-9+/=]+)\s*$/gm)].map(m=>Uint8Array.from(atob(m[1]),c=>c.charCodeAt(0)));
+ const length=parts.reduce((n,p)=>n+p.length,0);if(length!==+begin[1]||length<44||length>180000)throw Error('WAV 传输长度无效');
+ const bytes=new Uint8Array(length);let pos=0;for(const part of parts){bytes.set(part,pos);pos+=part.length;}
+ let crc=0xffffffff;for(const b of bytes){crc^=b;for(let i=0;i<8;i++)crc=crc&1?(crc>>>1)^0xedb88320:crc>>>1;}
+ if(((crc^0xffffffff)>>>0)!==parseInt(begin[2],16))throw Error('WAV CRC32 核对失败');
+ const word=offset=>String.fromCharCode(...bytes.slice(offset,offset+4)),view=new DataView(bytes.buffer);
+ if(word(0)!=='RIFF'||word(8)!=='WAVE'||view.getUint32(4,true)+8!==length)throw Error('WAV 文件头无效');
+ let info;
+ for(let offset=12;offset+8<=length;){const id=word(offset),size=view.getUint32(offset+4,true),start=offset+8;if(start+size>length)throw Error('WAV 文件头无效');
+  if(id==='fmt '&&size>=16){if(view.getUint16(start,true)!==1)throw Error('只支持 PCM WAV');info={rate:view.getUint32(start+4,true),channels:view.getUint16(start+2,true),bits:view.getUint16(start+14,true)};}
+  if(id==='data'&&info)return info;offset=start+size+(size%2);
+ }
+ throw Error('WAV 文件头无效');
+}
+function playbackGuard(info,actual){
+ if(info.channels<1||info.channels>2)throw Error('回放需要单声道或双声道 WAV；多通道录音请先选择并导出播放声道');
+ if(info.rate!==actual.rate||info.bits!==actual.bits)throw Error('WAV 格式与当前共享格式不一致，请先在时钟模块调整采样率和位深');
+ if(actual.adc&&!actual.reference&&info.channels!==actual.channels)throw Error('回放声道数与正在采集的通路不一致，请先停止 ADC 或调整通道数');
+ if(!actual.dac)throw Error('请先在 DAC 模块开启通路并写入设置');
+}
+function mediaEvent(text){
+ const done=text.match(/Recording done: (\d+) bytes -> (\/sdcard\/\S+\.wav) \(rx_ovf=(\d+)/);
+ if(done&&validWavPath(done[2]))return {type:'record-done',path:done[2],bytes:+done[1]+44,overflow:+done[3]};
+ const start=text.match(/Rec start:.*? -> (\/sdcard\/\S+\.wav)/);
+ if(start&&validWavPath(start[1]))return {type:'record-start',path:start[1]};
+ if(/(?:^|\n)E \(\d+\) A1_FILE:|(?:^|\n)E \(\d+\).*\brec:|(?:^|\n)E \(\d+\).*\bplay:/m.test(text))return {type:'error',message:text.trim()};
+ return null;
+}
+
+function canSaveFifo(actual){return actual.sd===true&&actual.vad===true&&actual.vadOutput===true;}
+
+return {recordingTag,validWavPath,parseFileList,wavInfo,wavTransferInfo,playbackGuard,mediaEvent,canSaveFifo};})();
 (()=>{
+
 
 
 
@@ -1071,6 +1147,7 @@ const $=s=>document.querySelector(s);
 document.title='ESP32-A1 Audio Lab · v'+VERSION;$('.version').textContent='v'+VERSION;
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dirtyFields=new Set();
+const media={files:[],playPath:'',recordSeconds:5,pending:null,lastRecording:null,needsList:false,error:null};
 let lastOperation={text:'',error:false},highlightPath=true;
 try{const saved=localStorage.getItem('a1-lab-mode');if(saved==='pro')queueMicrotask(()=>{mode='pro';draw();});}catch{}
 let yAutomatic=true,yBounds={min:-1,max:1};
@@ -1085,9 +1162,16 @@ function log(text,kind='device'){
 }
 const logText=()=>logs.map(x=>`${x.time.slice(11,23)} ${x.kind==='send'?'→':'←'} ${x.text}`).join('\n');
 function receive(text){
- const clean=stripTerminal(text);if(!clean.includes('@A1 ')&&clean.length<1024)log(clean);
+ const clean=stripTerminal(text);
  partial=(partial+clean).slice(-32768);const end=partial.lastIndexOf('\n');
- if(end>=0){const lines=partial.slice(0,end+1);partial=partial.slice(end+1);if(!lines.includes('@A1 ')){try{parseState(actual,'',lines);}catch{}draw();}}
+ if(end>=0){const lines=serialLogLines(partial.slice(0,end+1)).join('\n');partial=partial.slice(end+1);if(lines.trim()){log(lines);
+  for(const line of lines.split('\n')){const event=mediaEvent(line);
+   if(event?.type==='record-start'&&media.pending&&event.path.includes(media.pending.tag)){media.lastRecording=event.path;}
+   if(event?.type==='record-done'){media.needsList=true;media.lastRecording=event.path;if(media.pending&&event.path.includes(media.pending.tag)){if(media.playPath===media.pending.previousPath)media.playPath=event.path;media.pending=null;}if(event.overflow){media.error='录音发生 RX 溢出，请检查通信记录；文件不能视为完整采样。';status(media.error,true);}}
+   if(event?.type==='error'){media.error=event.message;status(event.message,true);}
+  }
+  try{parseState(actual,'',lines);}catch{}draw();syncMediaPanel();
+ }}
 }
 function status(text,error=false){
  lastOperation={text,error};$('#operationStatus').textContent=text;$('#operationStatus').classList.toggle('error',error);
@@ -1110,9 +1194,9 @@ function setConnection(ready){
  $('#deviceMeta').textContent='固件：'+(actual.firmwareVersion??'未读取');
  $('#liveSync').textContent=ready?(serial.capabilities?.has('web_status')?(actual.syncAt?'状态实时同步 · '+new Date(actual.syncAt).toLocaleTimeString():'正在读取设备状态'):'当前固件无实时遥测接口'):'设备未连接';
  $('#apply').disabled=!ready||busy;
- const verbs={'reg-write':'iic_wr','sd-on':'sdcard_on','sd-off':'sdcard_off','record':'rec_on','record-stop':'rec_off','play':'play_on','play-stop':'play_off','vad-save':'vad_wav','vad-prepare':'rec_prepare'};
+ const verbs={'reg-write':'iic_wr','sd-on':'sdcard_on','sd-off':'sdcard_off','record':'rec_on','record-stop':'rec_off','play':'play_on','play-stop':'play_off','vad-save':'vad_wav','vad-prepare':'rec_prepare','list-files':'fls'};
  document.querySelectorAll('[data-scope]').forEach(b=>{b.disabled=!ready||busy||!serial.capabilities?.has('web_scope');});
- document.querySelectorAll('[data-action]').forEach(b=>{const missing=ready&&verbs[b.dataset.action]&&!serial.capabilities?.has(verbs[b.dataset.action]);b.disabled=!ready||busy||missing;b.title=missing?'当前固件未提供此命令':'';});
+ document.querySelectorAll('[data-action]').forEach(b=>{const missing=ready&&verbs[b.dataset.action]&&!serial.capabilities?.has(verbs[b.dataset.action]);const fifoBlocked=b.dataset.action==='vad-save'&&!canSaveFifo(actual);b.disabled=!ready||busy||missing||fifoBlocked;b.title=missing?'当前固件未提供此命令':fifoBlocked?'FIFO 保存需要挂载 SD 并启用 VAD 专用滤波输出模式':'';});
 }
 function draw(){
  const focused=document.activeElement?.closest('[data-node]')?.dataset.node;
@@ -1124,7 +1208,7 @@ function draw(){
  document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===mode));
  document.querySelectorAll('[data-source]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.source===source));
  if(focused)document.querySelector(`[data-node="${focused}"]`)?.focus({preventScroll:true});
- syncPanel();renderDrafts();queueMicrotask(updateDockLayout);
+ syncPanel();renderDrafts();syncMediaPanel();queueMicrotask(updateDockLayout);
 }
 function syncPanel(){
  document.querySelectorAll('#panelBody [data-field]').forEach(el=>{const k=el.dataset.field;const v=/^gain[0-3]$/.test(k)?config.gains[+k.at(-1)]:config[k];if(v===undefined||document.activeElement===el)return;if(el.type==='checkbox')el.checked=v;else el.value=v;const o=$('#out-'+k);if(o)o.textContent=v+' '+(el.dataset.unit||'');});
@@ -1147,6 +1231,14 @@ function syncPanel(){
  if(['vad','interrupt'].includes(selected)){
   const v=$('.micro-number');if(v)v.innerHTML=`${actual.speech==null?'—':actual.speech?'检测到活动':'无活动'}<br><small>设备事件计数 ${actual.triggers??'—'}</small>`;
  }
+}
+async function listMedia(){if(actual.sd!==true)throw Error('先挂载 microSD');media.files=parseFileList(await command('fls /sdcard'));syncMediaPanel();}
+function syncMediaPanel(){
+ const list=$('#sdFiles');if(!list)return;
+ const markup=media.files.length?media.files.map(f=>`<button class="media-file" data-media-path="${esc(f.path)}" aria-pressed="${f.path===media.playPath}"><span>${esc(f.path.slice(8))}</span><small>${(f.bytes/1024).toFixed(1)} KiB</small></button>`).join(''):'<p>尚无 WAV 文件；可先录制，或读取 SD 文件列表。</p>';
+ if(list.dataset.source!==markup){list.dataset.source=markup;list.innerHTML=markup;}
+ const last=$('#recordFile');last.hidden=!media.lastRecording;if(media.lastRecording)last.textContent='最近录音：'+media.lastRecording;
+ const input=$('#playPath');if(input&&document.activeElement!==input)input.value=media.playPath;
 }
 function field(label,key,content){return `<label class="field"><span>${label}</span>${content}</label>`;}
 function select(label,key,values,value=config[key]){return field(label,key,`<select data-field="${key}" aria-label="${label}">${values.map(([v,t])=>`<option value="${v}" ${v===value?'selected':''}>${t}</option>`).join('')}</select>`);}
@@ -1176,10 +1268,10 @@ function panel(key){
   body=`<p>从 DAC 左右声道选一路，作为采集流里的 RE 参考槽。RE 可供主控侧 AEC 使用。</p>${toggle('启用 DAC 回采','reference')}${select('参考声道','referenceChannel',[[1,'DAC 左声道'],[2,'DAC 右声道']])}${readout('回采配置应答：'+known(actual.reference)+'<br>采集布局：'+['FL','FR','BL','BR'].slice(0,config.channels).concat(config.reference?['RE']:[]).join(' · '))}${note('这是回采路径，不表示 A1 已执行回声消除。修改前需关闭 VAD、ADC、DAC 和 I²S；采集 RE 时需保持 DAC 数据通路工作。')}`;
  }else if(key==='vad'||key==='interrupt'){
   title='硬件 VAD';category='DETECTION / ADC0';applyKind='vad';
-  body=`<p>ADC0 检测语音活动，经 A1 INT 通知 S31。录音触发需要先准备录音任务。</p>${toggle('启用 VAD 检测','vad')}${toggle('VAD 滤波输出 · 专用模式','vadOutput')}<div class="micro-number">${actual.speech==null?'—':actual.speech?'检测到活动':'无活动'}<br><small>设备事件计数 ${actual.triggers??'—'}</small></div><div class="button-row">${action('vad-status','读取 VAD 状态')}${action('vad-save','保存 FIFO 到 SD')}</div><div class="button-row">${action('vad-prepare','准备 5 秒触发录音')}</div>${readout('VAD 应答：'+known(actual.vad)+'<br>滤波音频输出：'+known(actual.vadOutput))}${note('普通 MIC 采集请关闭“VAD 滤波输出”，仅启用检测。滤波输出会接管 I²S 数据，不再是四路独立 MIC；需先停止波形、录放和 ADC / DAC。FIFO 保存也不等于连续预录音。')}`;
+  body=`<p>ADC0 检测语音活动，经 A1 INT 通知 S31。录音触发需要先准备录音任务。</p>${toggle('启用 VAD 检测','vad')}${toggle('VAD 滤波输出 · 专用模式','vadOutput')}<div class="micro-number">${actual.speech==null?'—':actual.speech?'检测到活动':'无活动'}<br><small>设备事件计数 ${actual.triggers??'—'}</small></div><div class="button-row">${action('vad-status','读取 VAD 状态')}${action('vad-save','保存 FIFO 到 SD')}</div><div class="button-row">${action('vad-prepare','准备 5 秒触发录音')}</div>${readout('VAD 应答：'+known(actual.vad)+'<br>滤波音频输出：'+known(actual.vadOutput))}${note('普通 MIC 采集请关闭“VAD 滤波输出”，仅启用检测。滤波输出会接管 I²S 数据，不再是四路独立 MIC；需先停止波形、录放和 ADC / DAC。FIFO 保存只在专用滤波输出模式可用，也不等于连续预录音。')}`;
  }else if(key==='host'||key==='sd'||key==='playback'){
   title='录音与文件播放';category='HOST / microSD';
-  body=`<p>录音和播放由开发板执行，文件保存在板上的 microSD。</p><div class="button-row">${action('sd-on','挂载 microSD')}${action('sd-off','卸载 microSD')}</div>${field('录音时长 / 秒','',`<input id="recordSeconds" type="number" min="1" max="600" value="5" aria-label="录音时长 / 秒">`)}<div class="button-row">${action('record','开始录音')}${action('record-stop','停止录音')}</div>${field('开发板 WAV 路径','',`<input id="playPath" type="text" value="/sdcard/test.wav" aria-label="开发板 WAV 路径" spellcheck="false">`)}<div class="button-row">${action('play','开始播放')}${action('play-stop','停止播放')}</div>${readout('SD：'+known(actual.sd)+'<br>录音：'+known(actual.recording)+'<br>播放：'+known(actual.playing))}${note('录音前启动 I²S 并打开 ADC；播放前准备匹配格式的 WAV。此页不把浏览器试听当作芯片播放，也不向串口直接塞 PCM。')}`;
+  body=`<p>录音和播放由开发板执行，文件保存在板上的 microSD。</p><div class="button-row">${action('sd-on','挂载 microSD')}${action('sd-off','卸载 microSD')}</div>${field('目标录音时长 / 秒','',`<input id="recordSeconds" type="number" min="1" max="600" value="${media.recordSeconds}" aria-label="目标录音时长 / 秒">`)}<div class="button-row">${action('record','开始录音')}${action('record-stop','停止录音')}</div><div id="recordFile" class="readout" hidden></div><div class="button-row">${action('list-files','读取 SD 文件列表')}</div><div id="sdFiles" class="sd-files"></div>${field('开发板 WAV 路径','',`<input id="playPath" type="text" value="${esc(media.playPath)}" aria-label="开发板 WAV 路径" spellcheck="false">`)}<div class="button-row">${action('play','开始播放')}${action('play-stop','停止播放')}</div>${readout('SD：'+known(actual.sd)+'<br>录音：'+known(actual.recording)+'<br>播放：'+known(actual.playing))}${note('每次录音使用独立文件名。直接回放请录制单声道或双声道 WAV；多通道文件需先导出选取声道。目标时长按板端缓冲区粒度结束，回放前会核对共享格式。')}`;
  }else if(key==='registers'){
   title='寄存器';category='PRO / REGISTER INSPECTOR';
   const reg=REGISTERS.find(x=>x.address===registerAddress);
@@ -1198,14 +1290,14 @@ function panel(key){
  $('#apply').hidden=!applyKind;$('#apply').textContent=applyKind==='clock'?'写入格式配置':applyKind==='gain'?'写入并读回增益':applyKind==='dac'?'写入播放设置':'写入此模块';
  setConnection(serial.ready);status(serial.ready?'已连接。修改后点击写入，不会自动下发。':'修改保存在草稿中。连接兼容的 a1_cli 后可写入。');draw();
 }
-async function command(cmd,expect){
- if(!cmd.startsWith('web_'))log(cmd,'send');const response=await serial.command(cmd);if(expect&&!expect.test(response))throw Error('缺少预期设备应答：'+cmd);parseState(actual,cmd,response);if(cmd==='web_status'){applySnapshot(actual,telemetry(response,'state'));mergeDeviceConfig(config,actual,dirtyFields);syncTimeInputs();lastSync=Date.now();setConnection(serial.ready);}draw();return response;
+async function command(cmd,expect,options){
+ if(!cmd.startsWith('web_'))log(cmd,'send');const response=await serial.command(cmd,options);if(expect&&!expect.test(response))throw Error('缺少预期设备应答：'+cmd);parseState(actual,cmd,response);if(cmd==='web_status'){applySnapshot(actual,telemetry(response,'state'));mergeDeviceConfig(config,actual,dirtyFields);syncTimeInputs();lastSync=Date.now();setConnection(serial.ready);}draw();return response;
 }
 async function run(fn){
  if(busy)return;if(!serial.ready){status('请先连接并识别兼容的 a1_cli。',true);return;}
  busy=true;setConnection(serial.ready);status('等待设备应答…');
  while(polling||serial.pending){if(!serial.ready){busy=false;setConnection(false);return;}await new Promise(r=>setTimeout(r,25));}
- try{await fn();if(serial.capabilities?.has('web_status'))await command('web_status');source='device';draw();status('操作完成。状态来自设备应答；音频效果仍需实际检查。');}
+ try{media.error=null;await fn();if(serial.capabilities?.has('web_status'))await command('web_status');source='device';draw();if(media.error)status(media.error,true);else status('操作完成。状态来自设备应答；音频效果仍需实际检查。');}
  catch(e){const message=e.message;if(serial.ready&&serial.capabilities?.has('web_status')){try{await command('web_status');source='device';draw();}catch{actual=newActual();draw();}}status(message,true);log(message,'error');}
  finally{busy=false;setConnection(serial.ready);}
 }
@@ -1235,19 +1327,20 @@ async function actionClick(id){
    case 'read-gains':await command('iic_rd 0x0067 4',/\[0x/);break;
    case 'read-volume':await command('dac_vol',/DAC vol =/);break;
    case 'vad-status':await command('vad_status',/has_speech=/);break;
-   case 'vad-prepare':if(actual.sd!==true)throw Error('先在录音模块挂载 microSD');await command('rec_prepare 5 web_vad',/Recording prepared:/);break;
-   case 'vad-save':if(actual.sd!==true||actual.vad!==true)throw Error('需要先挂载 microSD 并启用 VAD');await command('vad_wav /sdcard/vad_'+Date.now()+'.wav',/vad_wav: saved/);break;
-   case 'sd-on':await command('sdcard_on',/SD card (?:already )?mounted/);break;
-   case 'sd-off':if(actual.recording===true||actual.playing===true)throw Error('先停止录音和播放，再卸载 microSD');await command('sdcard_off',/SD card (?:not mounted|unmounted)/);break;
+   case 'vad-prepare':if(actual.sd!==true)throw Error('先在录音模块挂载 microSD');{const tag=recordingTag('webvad');media.pending={tag,previousPath:media.playPath};await command('rec_prepare 5 '+tag,/Recording prepared:/);}break;
+   case 'vad-save':if(!canSaveFifo(actual))throw Error('FIFO 保存需要挂载 SD 并启用 VAD 专用滤波输出模式');await command('vad_wav /sdcard/vad_'+Date.now()+'.wav',/vad_wav: saved/);media.needsList=true;break;
+   case 'sd-on':await command('sdcard_on',/SD card (?:already )?mounted/);if(serial.capabilities.has('fls'))await listMedia();break;
+   case 'list-files':await listMedia();break;
+   case 'sd-off':if(serial.capabilities.has('web_status'))await command('web_status');if(actual.recording===true||actual.playing===true)throw Error('先停止录音和播放，再卸载 microSD');await command('sdcard_off',/SD card (?:not mounted|unmounted)/);media.files=[];syncMediaPanel();break;
    case 'record':{
     const sec=Number($('#recordSeconds').value);if(!Number.isInteger(sec)||sec<1||sec>600)throw Error('录音时长需为 1–600 秒');
     if(actual.i2s!==true||actual.adc!==true||actual.sd!==true)throw Error('先启动 I²S、打开 ADC，并挂载 microSD');
-    await command(`rec_on ${sec} web`,/Recording prepared:|Rec start:|rec_on|record/i);break;
+    const tag=recordingTag();media.recordSeconds=sec;media.pending={tag,previousPath:media.playPath};await command(`rec_on ${sec} ${tag}`,/Recording prepared:|Rec start:|rec_on|record/i);break;
    }
    case 'record-stop':actual.recording=null;await command('rec_off');break;
    case 'play':{
-    const path=$('#playPath').value.trim();if(!/^\/sdcard\/[a-z\d_/-]+\.wav$/i.test(path)||path.includes('..'))throw Error('使用 /sdcard/ 下无空格的 WAV 路径');
-    if(actual.i2s!==true||actual.sd!==true)throw Error('先启动 I²S 并挂载 microSD');actual.playing=null;await command('play_on '+path+' 0');break;
+    const path=$('#playPath').value.trim();if(!validWavPath(path))throw Error('使用 /sdcard/ 下无空格的 WAV 路径');
+    if(actual.i2s!==true||actual.sd!==true)throw Error('先启动 I²S 并挂载 microSD');if(!serial.capabilities.has('fsnr'))throw Error('当前固件缺少 WAV 格式读取命令');const item=media.files.find(f=>f.path===path);const info=item&&item.bytes<=180000&&serial.capabilities.has('fget')?wavTransferInfo(await command('fget '+path,undefined,{timeout:30000})):wavInfo(await command('fsnr '+path+' 0 0 0.52'));await command('web_status');playbackGuard(info,actual);media.playPath=path;actual.playing=null;await command('play_on '+path+' 0');break;
    }
    case 'play-stop':actual.playing=null;await command('play_off',/play stop requested/);break;
    case 'reg-read':await command(`iic_rd ${hex(registerAddress,4)} 1`,/\[0x/);break;
@@ -1268,6 +1361,7 @@ $('#exportConfig').onclick=()=>{download('ESP32-A1-config.json',JSON.stringify({
 $('#importConfig').onclick=()=>{$('#toolMenu').hidden=true;$('#configFile').click();};
 $('#configFile').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>32768)throw Error('配置文件超过 32 KiB');const data=JSON.parse(await file.text());if(data.schema!=='a1-audio-lab/1')throw Error('不是 A1 Audio Lab 配置');config=validateConfig(data.config);Object.keys(FIELD_LABELS).forEach(k=>dirtyFields.add(k));source=serial.ready?'device':'draft';panel('clock');status('配置已导入草稿，未向设备写入。');}catch(e){panel('connection');status(e.message,true);}finally{$('#configFile').value='';}};
 document.addEventListener('click',e=>{
+ const file=e.target.closest('[data-media-path]');if(file){media.playPath=file.dataset.mediaPath;const input=$('#playPath');if(input)input.value=media.playPath;syncMediaPanel();return;}
  const scopeButton=e.target.closest('[data-scope]');if(scopeButton){startScope(scopeButton.dataset.scope,+scopeButton.dataset.channel);return;}
  const modeButton=e.target.closest('[data-mode]');if(modeButton){mode=modeButton.dataset.mode;try{localStorage.setItem('a1-lab-mode',mode);}catch{}draw();return;}
  const sourceButton=e.target.closest('[data-source]');if(sourceButton){source=sourceButton.dataset.source;draw();return;}
@@ -1279,6 +1373,7 @@ document.addEventListener('click',e=>{
 });
 $('#graph').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.closest('[data-node]')){e.preventDefault();panel(e.target.closest('[data-node]').dataset.node);}});
 $('#panelBody').addEventListener('input',e=>{
+ if(e.target.id==='playPath')media.playPath=e.target.value;if(e.target.id==='recordSeconds')media.recordSeconds=e.target.value;
  const key=e.target.dataset.field;if(!key)return;
  if(key==='registerAddress'){registerAddress=+e.target.value;panel('registers');return;}
  if(e.target.type==='number'&&!e.target.validity.valid)return;
@@ -1297,6 +1392,7 @@ async function pollLive(){
  polling=true;
  try{
   if(serial.capabilities.has('web_status')&&Date.now()-lastSync>800)await command('web_status');
+  if(media.needsList&&actual.sd&&!actual.recording&&!actual.playing&&serial.capabilities.has('fls')){media.needsList=false;await listMedia();}
   if(monitor){
    if(!serial.capabilities.has('web_scope'))throw Error('当前固件未提供波形接口');
    const target={...monitor,ms:timeWindowMs};const useWindow=serial.capabilities.has('web_scope_window');const response=await serial.command(useWindow?`web_scope_window ${target.kind} ${target.ch} ${target.ms}`:`web_scope ${target.kind} ${target.ch}`);

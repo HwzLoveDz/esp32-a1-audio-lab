@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0
+
+- Give each recording a unique name, refresh the SD file list after completion, and select the new file for playback.
+- Check WAV metadata and the shared audio format before playback; verify CRC32 and RIFF bounds for short-file transfers. Keep multichannel recordings separate from mono/stereo playback.
+- Restrict FIFO saving to mounted SD and confirmed VAD filtered-output mode; block unmount while recording or playing.
+- Recognize a command prompt followed by asynchronous recording logs in the same packet, preventing false serial timeouts. Filter complete telemetry and audio-data lines out of exported text logs.
+- Validate SD recording, manual stop, stereo DAC PCM, simultaneous recording/playback and dedicated VAD FIFO saving on ESP32-A1/S31 with existing v0.4.1 firmware; no reflash required. See [validation](docs/validation-v0.6.0.md).
+
 ## 0.5.3
 
 - Pan the diagram by holding the right mouse button and dragging, or using arrow keys, with bounded movement in all directions. The wheel only zooms, anchored at the pointer. Left click selects a module; the diagram suppresses the browser context menu.

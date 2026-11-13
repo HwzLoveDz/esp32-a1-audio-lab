@@ -1,6 +1,6 @@
 # CLI and telemetry protocol
 
-The browser sends one command at a time at 115200 baud and waits for a terminal prompt ending in `esp32_a1 > `. Commands are terminated by CR. The transport accepts CRLF responses and removes ANSI terminal sequences.
+The browser sends one command at a time at 115200 baud and waits for a terminal prompt `esp32_a1 > `. Commands are terminated by CR. The transport accepts CRLF responses and removes ANSI terminal sequences. A prompt may be followed immediately by asynchronous task logs in the same serial packet; it need not be the packet suffix.
 
 ## Discovery and errors
 
@@ -66,3 +66,13 @@ A valid duration and frame count agree to within one original sample frame. The 
 ## Draft versus device state
 
 Import/edit operations change only the browser draft. Apply operations send explicit commands. Successful responses and complete snapshots update confirmed state; unknown fields do not light paths. Dedicated VAD output is displayed separately from raw MIC paths. See the production validators in [core.mjs](../core.mjs) and the deterministic [tests](../tests/).
+
+## Optional SD file commands
+
+`fls /sdcard` returns `FLS BEGIN /sdcard`, zero or more `E <bytes> <name>` entries and `FLS END <count>`. The UI lists safe WAV paths and obtains the exact finalized recording path from asynchronous `Recording done` events.
+
+`fsnr <path> 0 0 0.52` inspects channel 0 and reports actual WAV rate, bit depth and channel count. This duration supplies at least 4096 frames at the minimum supported 8 kHz rate. For listed files no larger than 180000 bytes, `fget` instead permits short-file inspection: `FGET BEGIN <bytes> <crc32> <path>`, base64 `D <payload>` lines and `FGET END`. The UI verifies length, CRC32 and RIFF bounds before using those metadata. Bulk audio and telemetry lines are excluded from text logs; file paths and diagnostic messages remain.
+
+`rec_on <target_seconds> <unique_tag>` starts recording; its immediate prompt acknowledges the command, not file completion. Finalization reports data bytes, exact path and interval RX overflow count. A file's header adds 44 bytes. The target duration is buffer-granular. `rec_off` must finalize an active WAV and may cancel an armed recording.
+
+Playback requires a mono/stereo PCM WAV, a matching shared format and an enabled DAC. `vad_wav` requires mounted SD and VAD dedicated filtered output; detection-only mode cannot provide this FIFO. These optional commands are enabled only when advertised by `help`. No delete or format command is exposed in the UI.
