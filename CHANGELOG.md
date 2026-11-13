@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.3
+
+- Pan the diagram by holding the right mouse button and dragging, or using arrow keys, with bounded movement in all directions. The wheel only zooms, anchored at the pointer. Left click selects a module; the diagram suppresses the browser context menu.
+- Fit and center the diagram in the visible canvas area beside floating panels, using the new icon next to zoom controls or Home.
+- Preserve manual camera placement across device-state refreshes; distinguish node clicks from dragging.
+
 ## 0.5.0
 
 - Default to English on first launch; add persistent Chinese/English switching across diagrams, settings, status, waveform controls and errors; preserve raw serial logs.

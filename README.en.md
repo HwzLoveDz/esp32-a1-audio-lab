@@ -8,7 +8,7 @@ Configure an ESP32-A1 from its signal diagram: select a block, apply settings, r
 
 I built this workbench to keep audio routing, register controls and waveform inspection on one page. Draft settings stay separate from confirmed device responses.
 
-Version **v0.5.0** uses English on first launch and remembers your English/Chinese preference. It has been tested with an **ESP32-A1 Codec + ESP32-S31 EV Board** running debug firmware v0.4.1. The browser uses Web Serial to communicate with compatible `a1_cli` firmware. AC101S, AC102 and the previous sound-key firmware use different protocols.
+Version **v0.5.3** uses English on first launch and remembers your English/Chinese preference. It targets the **ESP32-A1 Codec + ESP32-S31 EV Board** running debug firmware v0.4.1. The latest live-board control and PCM check used web v0.5.0; v0.5.3 updates diagram navigation. The browser uses Web Serial to communicate with compatible `a1_cli` firmware. AC101S, AC102 and the previous sound-key firmware use different protocols.
 
 ## Try the interface
 
@@ -28,7 +28,7 @@ Open `http://127.0.0.1:8773/ESP32-A1-Audio-Lab.html`. Stop the server with Ctrl+
 
 | Area | Controls |
 | --- | --- |
-| Routing | Simple/professional diagrams, clickable modules and animated confirmed paths |
+| Routing | Simple/professional diagrams, left-click module selection, right-button panning, wheel zoom, fit/center beside panels and animated confirmed paths |
 | MIC / ADC | 1–4 capture channels, individual digital gain, mute and gain-register readback |
 | DAC | Stereo playback path, shared volume and mute |
 | Shared format | SDK-supported discrete rates from 8 to 48 kHz, 16/24-bit samples and TDM channel count |
@@ -39,6 +39,8 @@ Open `http://127.0.0.1:8773/ESP32-A1-Audio-Lab.html`. Stop the server with Ctrl+
 | Configuration | JSON import/export, restricted masked register writes and communication-log export |
 
 Five themes are included: light, graphite, ocean, pine and ember. Preferences stay in browser storage. The page loads no CDN resources, remote fonts or analytics.
+
+Hold the right mouse button and drag to pan. The wheel zooms at the pointer. The four-corner icon beside the zoom buttons fits and centers the diagram in the area left clear by floating panels; Home does the same. Panning is bounded, and device-state refreshes preserve manual placement.
 
 ## Connect a board
 
@@ -79,6 +81,8 @@ Detection-only mode leaves the MIC stream available. Filtered output stays off; 
 DAC enable, volume readback and mute share one apply action. RE feeds a selected DAC channel back into the capture stream. An enabled route does not by itself prove acoustic output.
 
 ## Validation
+
+v0.5.3 passes **51 host tests**, including right-button pan, wheel zoom, movement bounds and panel-aware fit/center checks.
 
 The v0.5.0 update passed **43 host tests** and a new live-board check on v0.4.1 debug firmware: four independent MIC streams, +6 dB gain readback, mute/unmute restoration, detection-only VAD, DAC volume/mute, and a 10-second / 480000-frame window. The screenshots above were captured from this session. See [v0.5.0 validation](docs/validation-v0.5.0.md) for scope and limits.
 

@@ -3,6 +3,7 @@ import {A1Serial} from './serial.mjs';
 import {FIELD_LABELS,editDraft,pendingDraft,moduleFields,revertDraft,formatSetting,explainFailure} from './workbench.mjs';
 import {installLanguage} from './i18n.mjs';
 import {renderGraph} from './graph.mjs';
+import {GraphViewport} from './viewport.mjs';
 
 const $=s=>document.querySelector(s);
 document.title='ESP32-A1 Audio Lab · v'+VERSION;$('.version').textContent='v'+VERSION;
@@ -13,7 +14,8 @@ try{const saved=localStorage.getItem('a1-lab-mode');if(saved==='pro')queueMicrot
 let yAutomatic=true,yBounds={min:-1,max:1};
 let timeWindowMs=50;try{const saved=Number(localStorage.getItem("a1-scope-window"));if(saved>=5&&saved<=10000)timeWindowMs=Math.round(saved);}catch{}
 let monitor=null,pollTimer=null,lastSync=0,polling=false,waveFrame=null,waveAt=0;
-let config=clone(DEFAULTS),actual=newActual(),mode='simple',source='draft',selected='',applyKind='',gainIndex=0,busy=false,zoom=1,logs=[],partial='',registerAddress=0x67;
+let config=clone(DEFAULTS),actual=newActual(),mode='simple',source='draft',selected='',applyKind='',gainIndex=0,busy=false,logs=[],partial='',registerAddress=0x67;
+const graphView=new GraphViewport($('#graphScroll'),$('#graph'),{overlays:[$('#inspector'),$('#wavePanel')],onChange:(view,auto)=>{$('#zoomText').textContent=Math.round(view.scale*100)+'%';$('#fit').setAttribute('aria-pressed',String(auto));}});
 const serial=new A1Serial({onData:receive,onDisconnect:()=>{monitor=null;waveFrame=null;clearTimeout(pollTimer);actual=newActual();setConnection(false);paintWave('设备已断开');draw();}});
 function log(text,kind='device'){
  logs.push({time:new Date().toISOString(),kind,text});if(logs.length>500)logs.shift();
@@ -53,6 +55,7 @@ function setConnection(ready){
 function draw(){
  const focused=document.activeElement?.closest('[data-node]')?.dataset.node;
  $('#graph').innerHTML=renderGraph(config,actual,{mode,source,selected,highlight:highlightPath});
+ graphView.setSize(1530,mode==='pro'?700:680);
  const c=source==='draft'?config:actual;
  $('#formatText').textContent=`${c.rate?Number(c.rate/1000).toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:3}):'—'} kHz · ${c.bits??'—'} bit · ${c.channels??'—'} MIC`;
  $('#sourceNote').textContent=source==='draft'?'配置草稿 · 修改不会自动下发':serial.ready?`设备应答 · ${actual.updated?new Date(actual.updated).toLocaleTimeString():'尚未读取'} · 未知通路不点亮`:'设备状态未知 · 请连接兼容的 a1_cli';
@@ -222,9 +225,8 @@ $('#panelBody').addEventListener('input',e=>{
  const out=$('#out-'+key);if(out)out.textContent=value+' '+e.target.dataset.unit;
  source=serial.ready?'device':'draft';draw();status(pendingDraft(config,actual,dirtyFields).length?'草稿已修改，尚未向设备写入。':'草稿与已读取的设备值一致。');
 });
-function scale(){const base=Math.max(1120,$('#graphScroll').clientWidth);$('#graph').style.minWidth='0';$('#graph').style.width=(base*zoom)+'px';$('#graph').style.height='auto';$('#zoomText').textContent=Math.round(zoom*100)+'%';}
-$('#zoomIn').onclick=()=>{zoom=Math.min(2.5,zoom+.15);scale();};$('#zoomOut').onclick=()=>{zoom=Math.max(.65,zoom-.15);scale();};$('#fit').onclick=()=>{const box=$('#graphScroll'),base=Math.max(1120,box.clientWidth);zoom=Math.min(box.clientWidth/base,box.clientHeight/(base*(mode==='pro'?700:680)/1530));scale();box.scrollLeft=0;box.scrollTop=0;};
-window.addEventListener('pagehide',()=>{monitor=null;clearTimeout(pollTimer);clearInterval(freshnessTimer);languageUI.dispose();canvasObserver.disconnect();dockObserver.disconnect();serial.disconnect();});
+$('#zoomIn').onclick=()=>graphView.zoom(1.2);$('#zoomOut').onclick=()=>graphView.zoom(1/1.2);$('#fit').onclick=()=>graphView.fit();
+window.addEventListener('pagehide',()=>{monitor=null;clearTimeout(pollTimer);clearInterval(freshnessTimer);languageUI.dispose();graphView.dispose();canvasObserver.disconnect();dockObserver.disconnect();serial.disconnect();});
 
 function schedulePoll(delay=100){clearTimeout(pollTimer);if(serial.ready)pollTimer=setTimeout(pollLive,delay);}
 async function pollLive(){
@@ -318,6 +320,7 @@ function updateDockLayout(){
  root.style.setProperty('--inspector-bottom',bottom+'px');root.style.setProperty('--scope-top',top+'px');
  if(viewport<850&&leftOpen&&waveOpen){root.style.setProperty('--inspector-bottom',(bottom+available*.48+6)+'px');root.style.setProperty('--scope-top',(top+available*.52+6)+'px');}
  document.querySelectorAll('[data-resize]').forEach(h=>{const wave=h.dataset.resize==='wave';h.setAttribute('aria-valuemin',wave?waveMin:leftMin);h.setAttribute('aria-valuemax',Math.round(wave?rightMax:leftMax));h.setAttribute('aria-valuenow',Math.round(wave?right:left));});
+ graphView.layout();
 }
 let drag=null;
 document.querySelectorAll('[data-resize]').forEach(handle=>{

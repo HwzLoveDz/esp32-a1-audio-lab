@@ -1,6 +1,6 @@
 {
   "name": "esp32-a1-audio-lab",
-  "version": "0.5.0",
+  "version": "0.5.3",
   "private": true,
   "type": "module",
   "description": "Local Web Serial audio workbench for compatible ESP32-A1 debug firmware",

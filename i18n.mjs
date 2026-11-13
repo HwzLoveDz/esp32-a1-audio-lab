@@ -1,6 +1,8 @@
 // Source-language message catalogue. Protocol keys, raw logs and user input are
 // intentionally not translated. Locale changes never invoke device commands.
 const entries={
+ "自适应并居中框图": "Fit and center diagram",
+ "按住右键拖动平移框图；滚轮缩放，Home 自适应并居中": "Hold the right mouse button to pan; wheel zooms, Home fits and centers",
  "草稿与已读取的设备值一致。": "Draft matches the confirmed device values.",
  "S31 主控 → I²C / I²S → A1 Codec": "S31 host → I²C / I²S → A1 Codec",
  "简易": "Simple",
