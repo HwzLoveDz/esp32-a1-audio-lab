@@ -12,7 +12,7 @@ Version **v0.4.1** has been tested with an **ESP32-A1 Codec + ESP32-S31 EV Board
 
 ## Try the interface
 
-Download [ESP32-A1-Audio-Lab.html](ESP32-A1-Audio-Lab.html) and open it in desktop Chrome or Edge. No installation is required. Without a device, explore the simple/professional diagrams and edit configuration drafts.
+Download [ESP32-A1-Audio-Lab.html](https://github.com/HwzLoveDz/esp32-a1-audio-lab/releases/download/v0.4.1/ESP32-A1-Audio-Lab.html) and open it in desktop Chrome or Edge. No installation is required. Without a device, explore the simple/professional diagrams and edit configuration drafts.
 
 If Web Serial is unavailable on a local file page, serve the repository locally:
 

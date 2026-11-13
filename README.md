@@ -12,7 +12,7 @@
 
 ## 先打开看看
 
-下载 [ESP32-A1-Audio-Lab.html](ESP32-A1-Audio-Lab.html)，用桌面 Chrome 或 Edge 打开。无需安装依赖，未连接设备时可以浏览简易／专业框图和编辑配置草稿。
+下载 [ESP32-A1-Audio-Lab.html](https://github.com/HwzLoveDz/esp32-a1-audio-lab/releases/download/v0.4.1/ESP32-A1-Audio-Lab.html)，用桌面 Chrome 或 Edge 打开。无需安装依赖，未连接设备时可以浏览简易／专业框图和编辑配置草稿。
 
 若本地文件页面没有 Web Serial，可在仓库目录运行：
 
