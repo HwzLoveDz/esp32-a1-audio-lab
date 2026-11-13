@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0
+
+- Default to English on first launch; add persistent Chinese/English switching across diagrams, settings, status, waveform controls and errors; preserve raw serial logs.
+- Separate pending edits from confirmed device state, with module comparisons and selective reversion.
+- Apply DAC path, volume readback and mute from one primary action.
+- Trace the selected signal path without changing disabled states or lighting sibling MIC inputs.
+- Bound serial write timeouts and disconnect cleanup; preserve SVG keyboard focus during state refresh.
+- Recheck the updated web controls on ESP32-A1/S31 hardware with debug firmware v0.4.1, and replace the README illustration with four live-board screenshots.
+
 ## 0.4.1
 
 - Start I²S before MIC/DAC enable, refresh device state before writes and after errors.

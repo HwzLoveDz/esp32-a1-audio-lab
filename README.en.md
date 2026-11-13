@@ -4,15 +4,15 @@
 
 Configure an ESP32-A1 from its signal diagram: select a block, apply settings, read back device state, and inspect real PCM data.
 
-![Four-channel capture, stereo playback, VAD and DAC reference paths](docs/assets/routing.svg)
+![Live four-channel capture routing on ESP32-A1 and S31](docs/assets/01-capture-routing.png)
 
 I built this workbench to keep audio routing, register controls and waveform inspection on one page. Draft settings stay separate from confirmed device responses.
 
-Version **v0.4.1** has been tested with an **ESP32-A1 Codec + ESP32-S31 EV Board**. The browser uses Web Serial to communicate with compatible `a1_cli` firmware. AC101S, AC102 and the previous sound-key firmware use different protocols.
+Version **v0.5.0** uses English on first launch and remembers your English/Chinese preference. It has been tested with an **ESP32-A1 Codec + ESP32-S31 EV Board** running debug firmware v0.4.1. The browser uses Web Serial to communicate with compatible `a1_cli` firmware. AC101S, AC102 and the previous sound-key firmware use different protocols.
 
 ## Try the interface
 
-Download [ESP32-A1-Audio-Lab.html](https://github.com/HwzLoveDz/esp32-a1-audio-lab/releases/download/v0.4.1/ESP32-A1-Audio-Lab.html) and open it in desktop Chrome or Edge. No installation is required. Without a device, explore the simple/professional diagrams and edit configuration drafts.
+Download [ESP32-A1-Audio-Lab.html](https://github.com/HwzLoveDz/esp32-a1-audio-lab/raw/refs/heads/main/ESP32-A1-Audio-Lab.html) and open it in desktop Chrome or Edge. No installation is required. Without a device, explore the simple/professional diagrams and edit configuration drafts.
 
 If Web Serial is unavailable on a local file page, serve the repository locally:
 
@@ -56,7 +56,33 @@ Use **detection only** for ordinary MIC capture: enable VAD and leave filtered o
 
 Filtered VAD output takes over the I²S stream; it is not four independent MIC channels. The UI requires waveform monitoring, recording/playback and ADC/DAC to be stopped before enabling this dedicated mode, and blocks ordinary MIC monitoring while it runs. Mixing it with an RE capture layout has produced fixed-valued slots and is not supported by the UI.
 
+## On the board
+
+These four screenshots show the v0.5.0 interface connected to an ESP32-A1/S31 board running v0.4.1 debug firmware. Data comes from the board through a local serial test bridge; no synthetic waveforms are used. The overview above shows enabled capture paths and inactive playback paths.
+
+### Channel gain and live PCM
+
+![ADC2 gain applied and read back at +6 dB, with a live 50 ms PCM window](docs/assets/02-gain-live-pcm.png)
+
+ADC2 is set to +6 dB and checked against register 0x0069. The separate waveform panel shows the current capture data, RMS and peak; its window accepts a slider or numeric entry.
+
+### Detection-only VAD and long windows
+
+![VAD detection enabled while an independent MIC stream continues over a ten-second window](docs/assets/03-vad-long-window.png)
+
+Detection-only mode leaves the MIC stream available. Filtered output stays off; voice-activity status and the event counter are read separately from the PCM waveform.
+
+### Duplex routing and DAC settings
+
+![DAC settings and reference routing on the connected board](docs/assets/04-duplex-dac.png)
+
+DAC enable, volume readback and mute share one apply action. RE feeds a selected DAC channel back into the capture stream. An enabled route does not by itself prove acoustic output.
+
 ## Validation
+
+The v0.5.0 update passed **43 host tests** and a new live-board check on v0.4.1 debug firmware: four independent MIC streams, +6 dB gain readback, mute/unmute restoration, detection-only VAD, DAC volume/mute, and a 10-second / 480000-frame window. The screenshots above were captured from this session. See [v0.5.0 validation](docs/validation-v0.5.0.md) for scope and limits.
+
+The broader format/reopen matrix below is the earlier v0.4.1 baseline; it was not repeated in full for v0.5.0.
 
 | Check | v0.4.1 result |
 | --- | --- |

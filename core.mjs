@@ -1,4 +1,4 @@
-export const VERSION='0.4.1';
+export const VERSION='0.5.0';
 export const RATES=[8000,11025,12000,16000,22050,24000,32000,44100,48000];
 export const DEFAULTS={rate:48000,bits:24,channels:4,gains:[0,0,0,0],adc:true,dac:true,adcMute:false,dacMute:false,volume:25,reference:false,referenceChannel:1,vad:false,vadOutput:false};
 export const REQUIRED=['iic_rd','adc_on','adc_off','dac_on','dac_off','adc_gain','dac_vol','adc_mute','dac_mute','set_rate','set_bits','set_ch','i2s_on','i2s_off','dac_ref','vad_on','vad_off','vad_status'];
@@ -87,7 +87,7 @@ export function planFor(kind,c,a=newActual(),index=0){
   if(!c.adc&&a.vad===true)throw Error('先关闭 VAD，再关闭 ADC');
   if(c.adc&&a.vad===true&&a.vadOutput===true)throw Error('VAD 滤波输出正在接管采集流。先关闭 VAD，或改为仅检测，再开启独立 MIC 采集');
   return c.adc?[...(a.i2s===true?[]:[step('i2s_on',/I2S up:|I2S already up/)]),step('adc_on',/ADC on via/),step('adc_mute '+Number(c.adcMute),/ADC mute =/)]:[step('adc_off',/ADC off via/)];
- case 'dac':return c.dac?[...(a.i2s===true?[]:[step('i2s_on',/I2S up:|I2S already up/)]),step('dac_on',/DAC on via/),step('dac_mute '+Number(c.dacMute),/DAC mute =/)]:[step('dac_off',/DAC off via/)];
+ case 'dac':return c.dac?[...(a.i2s===true?[]:[step('i2s_on',/I2S up:|I2S already up/)]),step('dac_on',/DAC on via/),...planFor('volume',c,a)]:[step('dac_off',/DAC off via/)];
  case 'gain':{
   if(!Number.isInteger(index)||index<0||index>3)throw Error('ADC 通道无效');
   return [step(`adc_gain ${c.gains[index]} ${hex(1<<index)}`,/ADC gain =/),step(`iic_rd ${hex(0x67+index,4)} 1`,/\[0x/,r=>{
@@ -147,7 +147,8 @@ export function applySnapshot(actual,s){
  const nullable=['adcMute','dacMute','speech'];
  if(s.type!=='state'||booleans.some(k=>typeof s[k]!=='boolean')||nullable.some(k=>s[k]!==null&&typeof s[k]!=='boolean')||!RATES.includes(s.rate)||![16,24].includes(s.bits)||![1,2,3,4].includes(s.channels)||![1,2].includes(s.referenceChannel)||!(s.volume===null||Number.isInteger(s.volume)&&s.volume>=0&&s.volume<=100)||!Number.isInteger(s.uptime_ms)||s.uptime_ms<0||!Number.isInteger(s.triggers)||s.triggers<0||!Array.isArray(s.gainRegisters)||s.gainRegisters.length!==4||s.gainRegisters.some(v=>v!==null&&(!Number.isInteger(v)||v<0||v>255)))throw Error('设备状态帧字段无效');
  if(s.scope_max_ms!==undefined&&(!Number.isInteger(s.scope_max_ms)||s.scope_max_ms<5||s.scope_max_ms>10000))throw Error('设备时间窗范围无效');
- const next={maxWindowMs:s.scope_max_ms??500};for(const k of [...booleans,...nullable,'rate','bits','channels','referenceChannel','volume','triggers'])next[k]=s[k];
+ if(s.version!==undefined&&(typeof s.version!=='string'||s.version.length>64))throw Error('固件版本字段无效');
+ const next={maxWindowMs:s.scope_max_ms??500,firmwareVersion:s.version??null};for(const k of [...booleans,...nullable,'rate','bits','channels','referenceChannel','volume','triggers'])next[k]=s[k];
  next.gains=s.gainRegisters.map(v=>v===null?null:(v-128)/2);
  next.syncAt=Date.now();next.updated=next.syncAt;next.uptime=s.uptime_ms;
  Object.assign(actual,next);for(let i=0;i<4;i++){if(s.gainRegisters[i]===null)delete actual.registers[0x67+i];else actual.registers[0x67+i]=s.gainRegisters[i];}

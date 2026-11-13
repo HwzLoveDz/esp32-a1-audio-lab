@@ -4,15 +4,15 @@
 
 在一张音频链路图上配置 ESP32-A1：点模块调参数，读回设备状态，再看实际 PCM 波形。
 
-![四路采集、双声道播放、VAD 与回采的专业链路图](docs/assets/routing.svg)
+![ESP32-A1 与 S31 实板四路采集状态](docs/assets/01-capture-routing.png)
 
 我做这个工具，是想把音频路径、寄存器和波形放在同一个工作台里。调麦克风时不用来回切页面，也能分清参数还在草稿里，还是已经写进了设备。
 
-当前版本 **v0.4.1**，针对 **ESP32-A1 Codec + ESP32-S31 EV Board** 验证。它通过浏览器 Web Serial 连接运行兼容 `a1_cli` 的主控。AC101S、AC102 和旧声音钥匙固件使用其他协议，不能混用。
+当前网页版本 **v0.5.0**，首次打开默认英语，可切换中文并记住选择；已连接 **ESP32-A1 Codec + ESP32-S31 EV Board**、配合 v0.4.1 调试固件验证。它通过浏览器 Web Serial 连接运行兼容 `a1_cli` 的主控。AC101S、AC102 和旧声音钥匙固件使用其他协议，不能混用。
 
 ## 先打开看看
 
-下载 [ESP32-A1-Audio-Lab.html](https://github.com/HwzLoveDz/esp32-a1-audio-lab/releases/download/v0.4.1/ESP32-A1-Audio-Lab.html)，用桌面 Chrome 或 Edge 打开。无需安装依赖，未连接设备时可以浏览简易／专业框图和编辑配置草稿。
+下载 [ESP32-A1-Audio-Lab.html](https://github.com/HwzLoveDz/esp32-a1-audio-lab/raw/refs/heads/main/ESP32-A1-Audio-Lab.html)，用桌面 Chrome 或 Edge 打开。无需安装依赖，未连接设备时可以浏览简易／专业框图和编辑配置草稿。
 
 若本地文件页面没有 Web Serial，可在仓库目录运行：
 
@@ -56,7 +56,33 @@ python -m http.server 8773 --bind 127.0.0.1
 
 “VAD 滤波输出”是专用模式，会接管 I²S 数据，不能同时当作四路独立 MIC。网页要求先停止波形、录放和 ADC / DAC，再启用它；专用输出运行时不开放普通 MIC 波形。RE 布局下混用后出现过固定值槽位，当前不支持这种混用方式。
 
+## 实板运行
+
+这四张图来自 v0.5.0 网页连接 ESP32-A1/S31 实板、运行 v0.4.1 调试固件的状态。数据通过本地串口测试桥读取，没有使用合成波形。首图展示四路采集已开启、播放通路未开启的总览。
+
+### 逐通道增益与实时 PCM
+
+![ADC2 写入并读回 +6 dB，同时查看 50 ms 实际 PCM](docs/assets/02-gain-live-pcm.png)
+
+ADC2 设置为 +6 dB，并读取 0x0069 寄存器核对。右侧独立波形窗口显示当前采样、RMS 与峰值，时间窗可用滑条或数字输入调整。
+
+### VAD 仅检测与长时间窗
+
+![VAD 仅检测开启，独立 MIC 继续进行十秒时间窗采样](docs/assets/03-vad-long-window.png)
+
+仅检测模式保留 MIC 采样流；滤波输出保持关闭。语音活动状态和事件计数独立读回，不用波形有无变化代替 VAD 结果。
+
+### 双向通路与 DAC 设置
+
+![实板 DAC 设置与 RE 回采通路](docs/assets/04-duplex-dac.png)
+
+DAC 开关、音量读回和静音使用同一个写入按钮。RE 将选定的 DAC 声道送回采集流；通路开启本身不代表已经测到模拟声音输出。
+
 ## 验证到哪一步
+
+v0.5.0 通过 **43 项主机测试**，并使用 v0.4.1 调试固件重新检查了四路独立 MIC、+6 dB 增益读回、静音往返、VAD 仅检测、DAC 音量与静音，以及十秒／480000 帧采样窗。上方四张图来自本轮实板连接，范围与边界见 [v0.5.0 验收记录](docs/validation-v0.5.0.md)。
+
+下表保留 v0.4.1 的格式组合与重开测试记录，本轮未完整重跑该矩阵。
 
 | 检查 | v0.4.1 结果 |
 | --- | --- |
