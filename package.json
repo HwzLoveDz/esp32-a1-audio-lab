@@ -1,0 +1,15 @@
+{
+  "name": "esp32-a1-audio-lab",
+  "version": "0.4.1",
+  "private": true,
+  "type": "module",
+  "description": "Local Web Serial audio workbench for compatible ESP32-A1 debug firmware",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test tests/core.test.mjs tests/live.test.mjs",
+    "build": "node build.mjs"
+  }
+}

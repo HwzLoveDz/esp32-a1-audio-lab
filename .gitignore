@@ -1,0 +1,17 @@
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.*
+!.env.example
+build/
+dist/
+coverage/
+ESP32-A1-Audio-Lab-v*.html
+*.bin
+*.elf
+*.map
+sdkconfig
+sdkconfig.old
+managed_components/
