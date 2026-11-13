@@ -73,6 +73,18 @@ Import/edit operations change only the browser draft. Apply operations send expl
 
 `fsnr <path> 0 0 0.52` inspects channel 0 and reports actual WAV rate, bit depth and channel count. This duration supplies at least 4096 frames at the minimum supported 8 kHz rate. For listed files no larger than 180000 bytes, `fget` instead permits short-file inspection: `FGET BEGIN <bytes> <crc32> <path>`, base64 `D <payload>` lines and `FGET END`. The UI verifies length, CRC32 and RIFF bounds before using those metadata. Bulk audio and telemetry lines are excluded from text logs; file paths and diagnostic messages remain.
 
-`rec_on <target_seconds> <unique_tag>` starts recording; its immediate prompt acknowledges the command, not file completion. Finalization reports data bytes, exact path and interval RX overflow count. A file's header adds 44 bytes. The target duration is buffer-granular. `rec_off` must finalize an active WAV and may cancel an armed recording.
+`rec_on <target_seconds> <unique_tag>` starts recording; its immediate prompt acknowledges the command, not file completion. Finalization reports data bytes, exact path and interval RX overflow count. A file's header adds 44 bytes. Legacy v0.4.1 targets are buffer-granular; the v0.4.2 buffered path uses exact sample counts. `rec_off` must finalize an active WAV and may cancel an armed recording.
 
 Playback requires a mono/stereo PCM WAV, a matching shared format and an enabled DAC. `vad_wav` requires mounted SD and VAD dedicated filtered output; detection-only mode cannot provide this FIFO. These optional commands are enabled only when advertised by `help`. No delete or format command is exposed in the UI.
+
+### Buffered recording: web_record_status
+
+Firmware v0.4.2 supplies a single `@A1` JSON line with `type: record`, Boolean `active`, integer `capturedBytes`, `writtenBytes`, `targetBytes`, `bufferBytes`, `peakBufferBytes`, `rate`, `frameBytes`, `elapsedMs` and integer `error`. Target bytes are zero for manual-stop mode. Captured data enters a bounded queue; written bytes count successful file writes. The owning application's `recording` state remains true until the WAV header and close complete.
+
+The UI accepts SD recording only when this command is advertised. It polls progress during a recording, prevents duplicate starts and refuses ADC/DAC/I²S teardown while their file tasks are active. Parameter edits still require an explicit apply action.
+
+### WAV inspection: web_file_info
+
+`web_file_info /sdcard/path.wav 0` checks a PCM WAV and returns one JSON line with `type: file`, `rate`, `bits`, `channels`, `bytes`, `dataBytes`, `frames`, Boolean `verified`, eight-digit hexadecimal `crc32` and `scannedBytes`. Header-only mode reports `verified: false`, zero scanned bytes and CRC `00000000`; these values explicitly distinguish metadata from a full-file scan.
+
+Argument `1` reads every file byte and calculates standard IEEE CRC32 on the board, with a bounded 16 KiB working buffer. It reports `verified: true` only after the scanned length matches the file size. The command checks RIFF length, chunk bounds, PCM alignment and sample count, accepts trailing metadata chunks, and refuses active recording/playback. The UI uses header-only mode before playback; hardware regression runs also use full scans and cross-check short-file CRC against `fget`.

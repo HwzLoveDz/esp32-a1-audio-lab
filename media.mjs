@@ -1,3 +1,4 @@
+import {telemetry,RATES} from './core.mjs';
 // SD metadata and playback guards. Does not write to the device or card.
 let sequence=0;
 export function recordingTag(prefix='web',now=Date.now()){
@@ -45,3 +46,22 @@ export function mediaEvent(text){
 }
 
 export function canSaveFifo(actual){return actual.sd===true&&actual.vad===true&&actual.vadOutput===true;}
+
+export function recordingSeconds(value){const n=Number(value);if(!Number.isInteger(n)||n<1||n>1800)throw Error('录音时长需为 1–1800 秒');return n;}
+export function wavDeviceInfo(text){
+ const f=telemetry(text,'file');
+ const ints=['rate','bits','channels','bytes','dataBytes','frames','scannedBytes'];
+ if(ints.some(k=>!Number.isSafeInteger(f[k])||f[k]<0)||!RATES.includes(f.rate)||![16,24].includes(f.bits)||f.channels<1||f.channels>5||f.bytes>2147483647||f.bytes<f.dataBytes+44||f.dataBytes!==f.frames*f.channels*(f.bits/8)||typeof f.verified!=='boolean'||!/^([a-f0-9]{8})$/i.test(f.crc32)||f.scannedBytes!==(f.verified?f.bytes:0))throw Error('WAV 文件信息无效');
+ return f;
+}
+export function recordingStatus(text){
+ const s=telemetry(text,'record'),ints=['capturedBytes','writtenBytes','targetBytes','bufferBytes','peakBufferBytes','rate','frameBytes','elapsedMs'];
+ if(typeof s.active!=='boolean'||ints.some(k=>!Number.isSafeInteger(s[k])||s[k]<0||s[k]>2147483647)||!Number.isInteger(s.error)||s.writtenBytes>s.capturedBytes||s.targetBytes&&s.capturedBytes>s.targetBytes||s.peakBufferBytes>s.bufferBytes||(s.active||s.capturedBytes||s.frameBytes)&&(!RATES.includes(s.rate)||s.frameBytes<1||s.frameBytes>15)||s.active&&!s.bufferBytes)throw Error('录音进度应答无效');
+ return s;
+}
+
+export function fileSize(bytes){
+ const units=['B','KiB','MiB','GiB'];let value=bytes,index=0;
+ while(value>=1024&&index<units.length-1){value/=1024;index++;}
+ return value.toFixed(index?1:0)+' '+units[index];
+}

@@ -16,6 +16,8 @@
 #include "esp_console.h"
 #include "esp_timer.h"
 #include "a1_web_live.h"
+#include "a1_web_files.h"
+#include "a1_recording.h"
 
 #define POINTS 128
 #define HISTORY_FRAMES 24000
@@ -151,7 +153,7 @@ static int status_command(int argc, char **argv)
     int gains[4]; const audio_codec_ctrl_if_t *ctrl = a1_cli_get_ctrl_if();
     for (int i = 0; i < 4; i++) { uint8_t v; gains[i] = ctrl && ctrl->read_reg(ctrl, 0x67+i, 2, &v, 1) == 0 ? v : -1; }
     flockfile(stdout);
-    printf("@A1 {\"type\":\"state\",\"version\":\"0.4.1\",\"uptime_ms\":%" PRId64 ",\"i2s\":%s,\"adc\":%s,\"dac\":%s,\"adcMute\":%s,\"dacMute\":%s,\"rate\":%lu,\"bits\":%u,\"channels\":%u,\"volume\":",
+    printf("@A1 {\"type\":\"state\",\"version\":\"0.4.2\",\"uptime_ms\":%" PRId64 ",\"i2s\":%s,\"adc\":%s,\"dac\":%s,\"adcMute\":%s,\"dacMute\":%s,\"rate\":%lu,\"bits\":%u,\"channels\":%u,\"volume\":",
         esp_timer_get_time()/1000, boolean(a1_cli_i2s_is_on()), boolean(adc), boolean(dac), boolean(ar == 0 ? am : -1), boolean(dr == 0 ? dm : -1), (unsigned long)a1_cli_rate(), a1_cli_bits(), a1_cli_adc_ch_count());
     if (volume < 0) printf("null"); else printf("%d", volume);
     printf(",\"reference\":%s,\"referenceChannel\":%d,\"vad\":%s,\"vadOutput\":%s,\"speech\":%s,\"triggers\":%u,\"sd\":%s,\"recording\":%s,\"playing\":%s,\"scope\":%s,\"rxOverflows\":%lu,\"gainRegisters\":[",
@@ -250,6 +252,8 @@ static int scope_command(int argc, char **argv)
 
 void a1_web_live_register(void)
 {
+    a1_web_files_register();
+    a1_record_register();
     rx_lock = xSemaphoreCreateMutex(); cache_lock = xSemaphoreCreateMutex();
     assert(rx_lock && cache_lock);
     rx_preview.stride = 5; tx_preview.stride = 2;

@@ -7,6 +7,6 @@ Date: 2026-11-13. Historical host-preview checkpoint, before real-board revalida
 - Locale round trip: Chinese → English → Chinese retains edited values; a reload retains the language preference. Original communication logs are excluded from translation.
 - A clearly marked simulated Web Serial fixture confirmed volume 25 → 42, write/readback completion, pending-count clearance and waveform UI translation. Language toggles left its control-command count at zero. A simulated command failure remained visible after closing the inspector.
 - Layout: checked at 1280×720 and 900×700. The narrow layout had no document-level horizontal overflow; the diagram has its own scroll region, zoom and explicit Fit view.
-- The fake device fixture is tests/ui-fixture.html, served locally. It is not included in the production HTML and is not evidence of real audio or board operation.
+- The fake device fixture is tests/ui-fixture.html, served locally. It is isolated from the production HTML; live-device runs have their own records.
 
-No firmware was changed, no serial port was seized and no new physical-board acceptance was performed in this preview. The prior v0.4.1 hardware results remain scoped to that version.
+This preview uses a simulated fixture. See the versioned validation records for live-board results.

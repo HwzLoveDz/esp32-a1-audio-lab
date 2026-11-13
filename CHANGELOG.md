@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.0
+
+- Separate I²S capture from SD writes with a bounded PSRAM queue, fixing sample loss during card-write stalls. Use exact sample-count targets and drain captured data on manual stop.
+- Add up to 30-minute recording targets, device-reported progress and readable file sizes. Require the buffered recording backend for SD recording.
+- Add fast WAV header inspection and optional on-board full-file read/CRC32 commands. Refuse dependent stream shutdown during file tasks.
+- Complete a 30-minute high-rate board run and five-minute simultaneous recording/playback with zero recording-interval RX overflows; add C concurrency/error-path regression tests. See [board results](docs/validation-v0.7.0.md).
+- Keep SD/record/play state updates bound to their own readout when progress and filename cards are present.
+- Refresh bilingual documentation around current operating steps and measured results.
+
+
 ## 0.6.0
 
 - Give each recording a unique name, refresh the SD file list after completion, and select the new file for playback.

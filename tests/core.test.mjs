@@ -143,3 +143,11 @@ test('录音异步日志紧跟提示符时仍完成命令，不误超时',async(
 });
 
  test('日志按完整行筛选，遥测与录音数据不会因串口分包混入导出记录',async()=>{const {serialLogLines}=await import('../core.mjs');assert.deepEqual(serialLogLines('esp32_a1 > @A1 {"type":"state"}\nD QUJDRA==\nFGET END\nRecording done: 4 bytes\n'),['FGET END','Recording done: 4 bytes']);});
+
+test('active file tasks prevent closing their ADC or DAC path',()=>{
+ const c=clone(DEFAULTS);c.adc=false;c.dac=false;
+ assert.throws(()=>planFor('adc',c,{...newActual(),recording:true}),/停止录音/);
+ assert.throws(()=>planFor('dac',c,{...newActual(),playing:true}),/停止播放/);
+ assert.deepEqual(planFor('adc',c,{...newActual(),recording:false}).map(s=>s.command),['adc_off']);
+ assert.deepEqual(planFor('dac',c,{...newActual(),playing:false}).map(s=>s.command),['dac_off']);
+});

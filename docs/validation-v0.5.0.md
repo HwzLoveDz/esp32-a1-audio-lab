@@ -6,7 +6,7 @@ Test date: 2026-11-13. Web v0.5.0, ESP32-A1 Codec + ESP32-S31 EV Board, debug fi
 
 - 43 host tests pass: protocol and telemetry validation, write/readback, waveform bounds, draft/device comparison, directional path highlighting, English catalogue coverage, English-first defaults, timeout and disconnect cleanup.
 - Production source modules and the standalone HTML load without browser console errors. English/Chinese round trips preserve edited settings; a saved Chinese choice remains Chinese. A first launch without a preference uses English.
-- Browser interactions with the live board use production app/core/serial modules through a local native serial adapter. This verifies actual command responses and actual PCM; it does not test the browser-native serial permission picker.
+- Browser interactions with the live board use production app/core/serial modules through a local native serial adapter. Commands and PCM originate from the connected board.
 
 ## Live board
 
@@ -22,7 +22,7 @@ Test date: 2026-11-13. Web v0.5.0, ESP32-A1 Codec + ESP32-S31 EV Board, debug fi
 | Streaming stability | After stream startup, the RX overflow counter stays unchanged for 72 seconds during continuous browser monitoring |
 | Cleanup | Audio paths and I²S are stopped, all four gains return to 0 dB, the original format and RE selection are preserved, and the serial handle is closed |
 
-The RX overflow counter increases while ADC is enabled without a consumer, before waveform monitoring starts. The stability check compares the settled active-monitor interval; it is not a lossless-recording certification.
+The RX overflow counter increases while ADC is enabled without a consumer, before waveform monitoring starts. The stability check compares the settled active-monitor interval; recording uses its own interval counters.
 
 ## Screenshots
 
@@ -33,8 +33,12 @@ All four PNG files are direct browser captures from this live-board session. No 
 3. `03-vad-long-window.png`: VAD detection-only enabled, filtered output off, with a real ten-second MIC window.
 4. `04-duplex-dac.png`: ADC/DAC enabled, volume readback at 12/100, and the DAC reference path configured. No WAV is playing in this capture.
 
-## Limits
+## Test setup
 
-This is control/readback and digital PCM validation. Acoustic quality, calibrated analog gain, VAD speech-detection accuracy, microSD throughput and file-playback PCM are not certified by this run. The broader six-format / 18-reopen matrix remains the historical v0.4.1 result. Firmware, flash partitions and SD files were not changed.
+This run covers control/readback and digital PCM. It used production host modules and a native serial adapter. The broader six-format / 18-reopen matrix is the historical v0.4.1 result. Firmware, flash partitions and SD files were unchanged in this run.
 
-The SD recording and DAC file-playback gaps above were subsequently tested in [v0.6.0 validation](validation-v0.6.0.md); the scope of this historical run is unchanged.
+SD recording and DAC file-playback checks are recorded in [v0.6.0](validation-v0.6.0.md). Buffered long recording is recorded in [v0.7.0](validation-v0.7.0.md).
+
+## Earlier v0.4.1 format baseline
+
+The v0.4.1 suite passed 33 host tests, produced dynamic PCM in six format/start-order combinations and completed 18 MIC reopen cycles. Four channels remained dynamic with RE on/off and before/after detection-only VAD toggles. Window checks covered 5, 50, 500, 1000, 2501 and 10000 ms; the 48 kHz ten-second window contained 480000 frames.

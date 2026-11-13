@@ -1,4 +1,4 @@
-export const VERSION='0.6.0';
+export const VERSION='0.7.0';
 export const RATES=[8000,11025,12000,16000,22050,24000,32000,44100,48000];
 export const DEFAULTS={rate:48000,bits:24,channels:4,gains:[0,0,0,0],adc:true,dac:true,adcMute:false,dacMute:false,volume:25,reference:false,referenceChannel:1,vad:false,vadOutput:false};
 export const REQUIRED=['iic_rd','adc_on','adc_off','dac_on','dac_off','adc_gain','dac_vol','adc_mute','dac_mute','set_rate','set_bits','set_ch','i2s_on','i2s_off','dac_ref','vad_on','vad_off','vad_status'];
@@ -36,7 +36,7 @@ export function assertResponse(s){
 }
 export function identifyCLI(s){
  const clean=assertResponse(s);
- const supported=[...REQUIRED,'iic_wr','set_adc_mon','sdcard_on','sdcard_off','rec_prepare','rec_on','rec_off','play_on','play_off','vad_wav','fls','fget','fsnr','help','web_status','web_scope','web_scope_window'];
+ const supported=[...REQUIRED,'iic_wr','set_adc_mon','sdcard_on','sdcard_off','rec_prepare','rec_on','rec_off','play_on','play_off','vad_wav','fls','fget','fsnr','web_file_info','web_record_status','help','web_status','web_scope','web_scope_window'];
  const found=new Set();
  // Only bind known CLI verbs; descriptions are not capabilities.
  for(const name of supported)if(new RegExp('(?:^|\\n)[ \\t]*'+name+'(?=[ \\t\\r\\n]|$)').test(clean))found.add(name);
@@ -86,10 +86,11 @@ export function planFor(kind,c,a=newActual(),index=0){
   if(a.i2s===true||a.adc===true||a.dac===true||a.vad===true)throw Error('先关闭 VAD、ADC、DAC 和 I²S，再调整共享格式');
   return [step('set_rate '+c.rate,/Rate =/),step('set_bits '+c.bits,/Bits =/),step('set_ch '+c.channels,/ADC channels =/)];
  case 'adc':
+  if(!c.adc&&a.recording===true)throw Error('先停止录音，再关闭 ADC');
   if(!c.adc&&a.vad===true)throw Error('先关闭 VAD，再关闭 ADC');
   if(c.adc&&a.vad===true&&a.vadOutput===true)throw Error('VAD 滤波输出正在接管采集流。先关闭 VAD，或改为仅检测，再开启独立 MIC 采集');
   return c.adc?[...(a.i2s===true?[]:[step('i2s_on',/I2S up:|I2S already up/)]),step('adc_on',/ADC on via/),step('adc_mute '+Number(c.adcMute),/ADC mute =/)]:[step('adc_off',/ADC off via/)];
- case 'dac':return c.dac?[...(a.i2s===true?[]:[step('i2s_on',/I2S up:|I2S already up/)]),step('dac_on',/DAC on via/),...planFor('volume',c,a)]:[step('dac_off',/DAC off via/)];
+ case 'dac':if(!c.dac&&a.playing===true)throw Error('先停止播放，再关闭 DAC');return c.dac?[...(a.i2s===true?[]:[step('i2s_on',/I2S up:|I2S already up/)]),step('dac_on',/DAC on via/),...planFor('volume',c,a)]:[step('dac_off',/DAC off via/)];
  case 'gain':{
   if(!Number.isInteger(index)||index<0||index>3)throw Error('ADC 通道无效');
   return [step(`adc_gain ${c.gains[index]} ${hex(1<<index)}`,/ADC gain =/),step(`iic_rd ${hex(0x67+index,4)} 1`,/\[0x/,r=>{

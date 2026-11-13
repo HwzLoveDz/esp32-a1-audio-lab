@@ -1,6 +1,6 @@
 # Firmware integration / 固件集成
 
-The public repository contains the project-authored bridge sources, not a complete firmware image or vendor SDK. The bridge was integrated and tested with an ESP32-A1 Codec + ESP32-S31 EV Board, an A1 SDK 0.5.x environment, and an S31-capable ESP-IDF 6.2 development toolchain. The repository CI tests the web application; it does not build the external SDK.
+The public repository contains the project-authored bridge sources, not a complete firmware image or vendor SDK. The bridge was integrated and tested with an ESP32-A1 Codec + ESP32-S31 EV Board, an A1 SDK 0.5.x environment, and an S31-capable ESP-IDF 6.2 development toolchain. Repository CI runs the web tests and host-side concurrency tests against the production recording module. Target firmware uses the separately installed SDK.
 
 本目录只包含自行编写的扩展，不能脱离兼容的 ESP-IDF、Codec 驱动和 CLI 工程单独编译。请先获得有权使用的 SDK；不要把这里的集成步骤当作通用开发板刷写教程。
 
@@ -9,6 +9,8 @@ The public repository contains the project-authored bridge sources, not a comple
 - `bridge/a1_web_live.c`: real PCM capture, bounded history, envelope statistics and telemetry commands.
 - `bridge/a1_web_live.h`: hooks for the owning application's capture/playback lifecycle.
 - `bridge/a1_web_port.h`: the application state/handle contract; implement these bindings with real CLI state.
+- `bridge/a1_recording.c/h`: a bounded PSRAM recording queue, separate capture/writer tasks, sample-count targets and recording progress.
+- `bridge/a1_web_files.c/h`: PCM WAV metadata and optional full-file CRC32 readback.
 - `bridge/a1_web_usb.c`: optional native USB Serial/JTAG console with CR/CRLF handling and a stable `esp32_a1 > ` prompt.
 
 Add the C files to the application's component sources and the bridge directory to its include path. Required APIs come from the Codec SDK plus ESP-IDF console, timer, FreeRTOS, heap, VFS and USB Serial/JTAG components. The native USB console also requires `esp_app_format` for `esp_app_desc.h`. The included `bridge/CMakeLists.txt` declares these dependencies when the SDK exposes its Codec component as `esp_codec_dev`. Keep external license notices in their original files.
@@ -17,13 +19,27 @@ Call `a1_web_live_register()` once, after the CLI state has been initialized and
 
 ## Capture and playback hooks
 
-Replace the recording task's input read with:
+The v0.4.2 recording path replaces a synchronous read/write loop with `a1_record_to_file()`. Keep the application responsible for opening the WAV, rewriting its header from `stats.bytes`, closing the file and reporting errors:
 
 ```c
-int result = a1_web_adc_read(adc_device, buffer, byte_count);
+#include <stdatomic.h>
+#include "a1_recording.h"
+
+static atomic_bool record_run;
+/* Set record_run=true when starting; rec_off sets it false. */
+a1_record_stats_t stats;
+int result = a1_record_to_file(adc_device, wav_file, block_bytes,
+    sample_rate, payload_channels * (bits / 8), target_seconds,
+    &record_run, &stats);
+/* Finalize the header using stats.bytes, then close the file.
+ * Report result and the recording-interval RX overflow delta. */
 ```
 
-This serializes RX access and feeds the waveform cache only after a successful read. When a recording task is prepared or active, the monitor reuses its data; it must not create a second independent reader on the same I²S stream.
+The producer owns RX and calls `a1_web_adc_read()`, which also feeds the waveform cache. The writer consumes ordered blocks from a roughly 2 MiB PSRAM queue. Do not add a second reader or keep the previous synchronous read/write loop around this call. The application must wait for file finalization before clearing its recording flag, closing ADC/I²S or unmounting SD. ADC/DAC shutdown commands should refuse active dependent file tasks.
+
+Positive targets use exact sample counts. Manual stop drains captured blocks before returning. Allocation, read, write and queue-exhaustion errors propagate to the caller. The module bounds signed VFS offsets and RIFF lengths; the web UI offers 1–1800 seconds per file. At 48 kHz / 24-bit / four MIC plus RE, 30 minutes uses 1296000000 PCM bytes. Budget PSRAM and card space accordingly.
+
+`a1_web_live_register()` also registers `web_record_status` and `web_file_info`. The former advertises the buffered recording integration to the UI. The latter reads headers without running an FFT; add argument `1` for a sequential full-file read and CRC32. File inspection refuses active recording/playback.
 
 After a successful DAC write, feed exactly the PCM bytes actually submitted:
 
@@ -47,7 +63,7 @@ void a1_web_vad_snapshot(int *speech, unsigned *triggers);
 
 Use `*speech = -1` for unavailable detection state; return real trigger counts. Recording-prepared and actively-recording states are distinct in `a1_web_port.h` and must not be conflated.
 
-## Board-specific fixes used for v0.4.1
+## Board-specific startup and shared-frame setup
 
 The tested board uses SDA 46, SCL 45, BCLK 37, WS 1, MCU DOUT 35, DIN 6, INT 7, active-low A1 reset 2 and oscillator enable 38. This is a tested-board mapping, not a default for every A1 board. A1 uses its external clock with `no_mclk = true` in this integration.
 
@@ -70,8 +86,12 @@ Reuse the same Codec interface for ADC and DAC; never pulse reset while the peer
 
 ## Memory and runtime behavior
 
-The bridge keeps up to 500 ms of raw samples at 48 kHz and per-millisecond statistics for up to 10 seconds. Five RX slots and two TX slots require roughly 1.5 MiB of external RAM. If long-history allocation fails, `scope_max_ms` advertises the shorter 500 ms limit. Required task/mutex allocation failures are fatal; budget memory before integrating.
+The waveform cache keeps up to 500 ms of raw samples at 48 kHz and per-millisecond statistics for up to 10 seconds. Five RX slots and two TX slots require roughly 1.5 MiB of external RAM. If long-history allocation fails, `scope_max_ms` advertises the shorter 500 ms limit. Required task/mutex allocation failures are fatal; budget memory before integrating.
 
 Monitoring expires approximately two seconds after polling stops. Expiry, format changes and RX overflows invalidate history. It must refill with contiguous new samples before a window becomes valid. The waveform bridge itself writes no SD files. Recording/playback commands remain the owning application's responsibility.
 
 Use the [protocol document](../docs/protocol.md) and `core.mjs` validators when implementing another backend. No board is flashed by this repository's build or CI scripts.
+
+## Host regression tests
+
+Run `sh tests/run-firmware-tests.sh` from the repository root on Linux or WSL with a C11 compiler and POSIX threads. It compiles the actual recording implementation against a small task/queue shim and injects slow writes, full buffers, failed reads/writes, cancellation and allocation failure. These tests complement the board's real SD recording runs.

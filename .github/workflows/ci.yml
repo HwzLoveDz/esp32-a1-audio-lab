@@ -11,5 +11,6 @@ jobs:
         with:
           node-version: '22'
       - run: npm test
+      - run: sh tests/run-firmware-tests.sh
       - run: npm run build
       - run: git diff --exit-code -- ESP32-A1-Audio-Lab.html

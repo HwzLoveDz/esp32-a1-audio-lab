@@ -4,7 +4,7 @@ The browser application uses native Web Serial, Canvas, SVG and browser storage 
 
 `docs/assets/routing.svg` is generated from this project's `graph.mjs`. It is an interface diagram, not a vendor schematic.
 
-`firmware/bridge/` contains the telemetry, PCM history and native USB console extensions written for this project. They call external ESP-IDF and Codec/CLI interfaces. MIT applies to these files, not to their dependencies.
+`firmware/bridge/` contains the telemetry, PCM history, buffered recording, WAV inspection and native USB console extensions written for this project. They call external ESP-IDF and Codec/CLI interfaces. MIT applies to these files, not to their dependencies.
 
 Integration was developed against an ESP32-A1 SDK 0.5.x environment and an ESP32-S31-capable ESP-IDF 6.2 development toolchain. Obtain a compatible SDK through a source you are entitled to use. This repository does not redistribute the vendor SDK, Codec driver, `esp_codec_dev`, board schematics, register manuals, vendor illustrations or compiled firmware containing those dependencies.
 

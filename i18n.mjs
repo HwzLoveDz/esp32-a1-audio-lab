@@ -1,6 +1,21 @@
 // Source-language message catalogue. Protocol keys, raw logs and user input are
 // intentionally not translated. Locale changes never invoke device commands.
 const entries={
+ "设备应答已收到。":"Device response received.",
+ "先停止录音，再关闭 ADC":"Stop recording before disabling ADC",
+ "先停止播放，再关闭 DAC":"Stop playback before disabling DAC",
+ "先停止录音和播放，再关闭 I²S":"Stop recording and playback before shutting down I²S",
+ "每次录音使用独立文件名。直接回放请录制单声道或双声道 WAV；多通道文件需先导出选取声道。缓冲录音固件按采样帧计时，单次最长 30 分钟；回放前会核对共享格式。":"Each recording gets a unique name. Direct playback requires mono or stereo WAV; extract channels from multichannel files first. Buffered firmware records by sample count, up to 30 minutes per file. Playback checks the shared format.",
+ "录音时长需为 1–1800 秒":"Recording duration must be 1\u20131800 seconds",
+ "WAV 文件信息无效":"Invalid WAV file information",
+ "录音进度应答无效":"Invalid recording progress response",
+ "SD 录音需要 v0.4.2 或更新的缓冲录音固件":"SD recording requires buffered recording firmware v0.4.2 or newer",
+ "录音正在进行":"Recording is in progress",
+ "先停止当前录音或已准备的触发录音":"Stop the current or armed recording first",
+ "录音进度":"Recording progress",
+ "已写入":"Written",
+ "录音已中断，请检查 SD 卡和通信记录":"Recording interrupted; check the SD card and communication log",
+ "缓冲录音固件按采样帧计时，单次最长 30 分钟；回放前会核对共享格式。":"Buffered firmware records by sample count, up to 30 minutes per file. Playback checks the shared format.",
  "FIFO 保存需要挂载 SD 并启用 VAD 专用滤波输出模式": "FIFO saving requires mounted SD and dedicated VAD filtered output",
  "WAV 传输不完整": "Incomplete WAV transfer",
  "WAV 传输长度无效": "Invalid WAV transfer length",
