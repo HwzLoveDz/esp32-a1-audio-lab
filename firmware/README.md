@@ -11,7 +11,7 @@ The public repository contains the project-authored bridge sources, not a comple
 - `bridge/a1_web_port.h`: the application state/handle contract; implement these bindings with real CLI state.
 - `bridge/a1_web_usb.c`: optional native USB Serial/JTAG console with CR/CRLF handling and a stable `esp32_a1 > ` prompt.
 
-Add the C files to the application's component sources and the bridge directory to its include path. Required APIs come from the Codec SDK plus ESP-IDF console, timer, FreeRTOS, heap, VFS and USB Serial/JTAG components. The native USB console also uses `esp_app_desc.h`. Keep external license notices in their original files.
+Add the C files to the application's component sources and the bridge directory to its include path. Required APIs come from the Codec SDK plus ESP-IDF console, timer, FreeRTOS, heap, VFS and USB Serial/JTAG components. The native USB console also requires `esp_app_format` for `esp_app_desc.h`. The included `bridge/CMakeLists.txt` declares these dependencies when the SDK exposes its Codec component as `esp_codec_dev`. Keep external license notices in their original files.
 
 Call `a1_web_live_register()` once, after the CLI state has been initialized and before commands can start recording. If using the USB console, call `a1_web_usb_init()` during startup and run `a1_web_usb_run()` after creating the board buses. The USB console calls the port's `a1_cli_register_cmds()`; that function must register the vendor commands and invoke `a1_web_live_register()` exactly once. Do not also run a second console on the same USB interface.
 
