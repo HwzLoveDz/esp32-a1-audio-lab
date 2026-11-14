@@ -6,6 +6,21 @@ import {translate,setLanguage,getLanguage,preferredLanguage} from '../i18n.mjs';
 import {renderGraph} from '../graph.mjs';
 import {A1Serial} from '../serial.mjs';
 import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
+
+test('Mint is the first-run theme, including blocked storage, while saved themes stay selected',()=>{
+ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ assert.match(html,/<html\b[^>]*data-theme="mint"/);
+ const bootstrap=html.match(/<body><script>([\s\S]*?)<\/script>/)[1];
+ for(const [saved,expected] of [[null,'mint'],[undefined,'mint'],['','mint'],['invalid','mint'],['mint','mint'],['light',undefined],['graphite','graphite'],['ocean','ocean'],['pine','pine'],['ember','ember']]){
+  const document={documentElement:{dataset:{theme:'mint'}}};let writes=0;
+  runInNewContext(bootstrap,{document,localStorage:{getItem:key=>{assert.equal(key,'a1-lab-theme');return saved;},setItem:()=>writes++}});
+  assert.equal(document.documentElement.dataset.theme,expected);assert.equal(writes,0);
+ }
+ const document={documentElement:{dataset:{theme:'mint'}}};
+ runInNewContext(bootstrap,{document,localStorage:{getItem:()=>{throw Error('Storage blocked');}}});
+ assert.equal(document.documentElement.dataset.theme,'mint');
+});
 
 test('a submitted gain change keeps its channel and value while the user navigates or edits',async()=>{
  const c=clone(DEFAULTS),dirty=new Set(['gain0','gain1']);c.gains[0]=6;

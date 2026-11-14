@@ -10,7 +10,7 @@ Interface preview from v0.8.2 with simulated state and waveforms. The [board gal
 
 I built this tool to make ESP32-A1 debugging easier to follow. Trace capture, playback and reference signals on one diagram, select a block to tune it, then check its readback and waveform. The signal path gives each setting a place in the chip’s architecture.
 
-Version **v0.8.2** uses English on first launch and remembers your English/Chinese preference. It targets the **ESP32-A1 Codec + ESP32-S31 EV Board**. SD recording uses **v0.4.2 buffered recording firmware**, with up to 30 minutes per file, live progress and selectable file playback. Web Serial connects the page to a compatible `a1_cli` host.
+Version **v0.8.3** starts in English with the Mint theme and remembers your language and theme choices. It targets the **ESP32-A1 Codec + ESP32-S31 EV Board**. SD recording uses **v0.4.2 buffered recording firmware**, with up to 30 minutes per file, live progress and selectable file playback. Web Serial connects the page to a compatible `a1_cli` host.
 
 ## Try the interface
 
@@ -101,7 +101,7 @@ The [board gallery](docs/board-gallery-v0.8.0.md) was captured with web v0.8.0 a
 
 ## Test results
 
-This version passes **82 web/protocol tests**. Browser checks cover 153 input cases across 33 controls, 34 diagram entries, 12 workflows and six themes, supplemented by 7,700 generated property/model runs and 300 seeded interaction steps. See the [v0.8.2 browser review](docs/validation-v0.8.2.md).
+This version passes **83 web/protocol tests**, including [startup theme and saved-preference checks](docs/validation-v0.8.3.md). The v0.8.2 browser checks cover 153 input cases across 33 controls, 34 diagram entries, 12 workflows and six themes, supplemented by 7,700 generated property/model runs and 300 seeded interaction steps. See the [v0.8.2 browser review](docs/validation-v0.8.2.md).
 
 The seven firmware recording-module tests and hardware results remain in their versioned records. The [v0.8.0 example checks](docs/validation-v0.8.0.md) retain the board results. The [v0.7.0 board record](docs/validation-v0.7.0.md) covers a 30-minute high-rate recording, full-file readback and CRC32, simultaneous recording/playback, stopping and restarting.
 

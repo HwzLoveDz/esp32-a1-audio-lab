@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.3
+
+- Use Mint on first launch and when theme storage is unavailable or invalid. Keep explicitly saved Light and dark themes, and apply the initial palette before the main application loads.
+- Add startup-theme regression coverage; the full web/protocol suite passes 83 tests.
+
 ## 0.8.2
 
 - Require explicit values in numeric gain/volume controls, retain useful invalid-input feedback and reject fractional waveform-window lengths.
