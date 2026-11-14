@@ -8,7 +8,7 @@ See the ESP32-A1 audio architecture, click a block to tune it, and check device 
 
 I built this tool to make chip debugging easier to follow. Capture, playback, VAD and reference routing share one map, so you can adjust a block where it sits in the signal path instead of hunting through code. Settings are read back after writing, and waveform samples come directly from the board's PCM stream.
 
-**Current versions: web v0.8.3 · debug firmware v0.4.2. Verified on an ESP32-A1 Codec + ESP32-S31 EV Board.** Every screenshot on this page shows this combination running on hardware, using the Graphite dark theme.
+**Current versions: web v0.8.3 · debug firmware v0.4.2. Verified on an ESP32-A1 Codec + ESP32-S31 EV Board.**
 
 ## Tested on hardware
 
@@ -73,7 +73,7 @@ Mount microSD in the ESP32-S31 panel and enable ADC to record. Each recording ge
 
 Select a mono or stereo PCM WAV from the list to prepare playback. Its rate and bit depth must match the current clock; the page checks the format. Extract the desired channels on a computer before playing a multichannel recording.
 
-![Playing the five-minute recording and viewing real DAC PCM](docs/assets/07-file-playback-v083.jpg)
+![Playing a recorded WAV and viewing real DAC PCM](docs/assets/07-file-playback-v083.jpg)
 
 Import and export JSON configurations, then choose **Apply full configuration** to send imported settings. The register tool provides address-limited masked writes and readback. Export communication logs for troubleshooting. All page resources are included locally, with no CDN, remote fonts or analytics.
 

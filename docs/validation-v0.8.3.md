@@ -43,7 +43,7 @@ The five-minute file was then selected in the browser and played through the DAC
 
 The unchanged production standalone page, serial protocol implementation and parameter modules were used. A loopback HTTP adapter connected their byte stream to the actual Windows serial device. Device state, register responses, PCM, SD progress and files came from the connected board.
 
-The visible workflow covered Quick start, per-channel gain application and readback, the ten-second waveform window, detection-only VAD, duplex/reference setup, recording progress, file selection/playback, Stop all and disconnect. All seven current README images were captured from this run in Graphite, in English. The screenshots carry the live-board marker.
+The visible workflow covered Quick start, per-channel gain application and readback, the ten-second waveform window, detection-only VAD, duplex/reference setup, recording progress, file selection/playback, Stop all and disconnect.
 
 ## Web and firmware regression results
 
