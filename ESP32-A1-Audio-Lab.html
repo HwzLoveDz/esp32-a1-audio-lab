@@ -1015,7 +1015,7 @@ function renderGraph(config,actual,{mode='simple',source='draft',selected='',hig
   e('vad-input','M405 150 V76 H810','vad',state.vad,'ADC0',600,62);
   e('vad-stream','M900 114 V150','vad',state.vadOutput,'滤波输出',985,138);
   e('vad-event','M990 76 H1210','vad',state.vad,'检测事件',1100,62);
-  e('interrupt','M1430 76 H1470 V309 H1430','vad',state.vad);
+  e('interrupt','M1320 114 V264','vad',state.vad);
   n('playback',80,650,190,80,'S31 / PLAYBACK','主控数字音频','play',state.dac);
   n('volume',370,650,180,80,'DAC VOLUME',`${source==='draft'?config.volume:actual.volume??'—'} / 100`,'play',state.dac);
   n('dac',650,650,180,80,'STEREO DAC','LEFT / RIGHT','play',state.dac);
@@ -1039,7 +1039,7 @@ function renderGraph(config,actual,{mode='simple',source='draft',selected='',hig
   e('vad-input','M500 170 V62 H770','vad',state.vad,'ADC0',635,47);
   e('vad-stream','M875 104 V170','vad',state.vadOutput,'滤波输出',970,142);
   e('vad-event','M980 62 H1140','vad',state.vad);
-  e('interrupt','M1370 62 H1410 V222 H1370','vad',state.vad);
+  e('interrupt','M1255 104 V170','vad',state.vad);
   n('playback',80,650,200,104,'S31 · 数字播放','I²S 输入','play',state.dac);
   n('volume',350,650,180,104,'播放音量 / 静音',`${source==='draft'?config.volume:actual.volume??'—'} / 100`,'play',state.dac);
   n('dac',650,650,170,104,'A1 · 双声道 DAC','LEFT / RIGHT','play',state.dac);
