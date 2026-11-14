@@ -1,7 +1,7 @@
 import {VERSION,DEFAULTS,RATES,REGISTERS,clone,validateConfig,newActual,planFor,validateStep,parseState,maskedWrite,hex,stripTerminal,serialLogLines,telemetry,applySnapshot,validateWave,mergeDeviceConfig,zoomVertical} from './core.mjs';
 import {EXAMPLES,applyExample,applySetup} from './examples.mjs';
 import {A1Serial} from './serial.mjs';
-import {FIELD_LABELS,editDraft,pendingDraft,moduleFields,revertDraft,formatSetting,explainFailure} from './workbench.mjs';
+import {FIELD_LABELS,editDraft,pendingDraft,moduleFields,moduleSubmission,completeSubmission,revertDraft,formatSetting,explainFailure} from './workbench.mjs';
 import {installLanguage} from './i18n.mjs';
 import {renderGraph} from './graph.mjs';
 import {GraphViewport} from './viewport.mjs';
@@ -12,7 +12,7 @@ document.title='ESP32-A1 Audio Lab · v'+VERSION;$('.version').textContent='v'+V
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dirtyFields=new Set();
 const media={files:[],playPath:'',recordSeconds:5,pending:null,lastRecording:null,needsList:false,error:null,recordStatus:null};
-let lastOperation={text:'',error:false},highlightPath=true,importedConfig=null,lastExampleName='';
+let lastOperation={text:'',error:false},highlightPath=true,importedConfig=null,lastExampleName='',renderedGraph='';
 try{const saved=localStorage.getItem('a1-lab-mode');if(saved==='pro')queueMicrotask(()=>{mode='pro';draw();});}catch{}
 let yAutomatic=true,yBounds={min:-1,max:1};
 let timeWindowMs=50;try{const saved=Number(localStorage.getItem("a1-scope-window"));if(saved>=5&&saved<=10000)timeWindowMs=Math.round(saved);}catch{}
@@ -55,7 +55,9 @@ function setConnection(ready){
  $('#refresh').disabled=!ready||busy;
  $('#deviceMeta').textContent='固件：'+(actual.firmwareVersion??'未读取');
  $('#liveSync').textContent=ready?(serial.capabilities?.has('web_status')?(actual.syncAt?'状态实时同步 · '+new Date(actual.syncAt).toLocaleTimeString():'正在读取设备状态'):'当前固件无实时遥测接口'):'设备未连接';
- $('#apply').disabled=!ready||busy;
+ $('#showExamples').disabled=busy;$('#waveChannel').disabled=busy;$('#stopWave').disabled=busy;
+ document.querySelectorAll('#panelBody input,#panelBody select,#revertModule,#importConfig').forEach(el=>{el.disabled=busy;});
+ $('#apply').disabled=!ready||busy||!!$('#panelBody').querySelector('[data-field]:invalid');
  document.querySelectorAll('[data-example],#applyImported').forEach(b=>{b.disabled=!ready||busy;});
  const verbs={'reg-write':'iic_wr','sd-on':'sdcard_on','sd-off':'sdcard_off','record':'rec_on','record-stop':'rec_off','play':'play_on','play-stop':'play_off','vad-save':'vad_wav','vad-prepare':'rec_prepare','list-files':'fls'};
  document.querySelectorAll('[data-scope]').forEach(b=>{b.disabled=!ready||busy||!serial.capabilities?.has('web_scope');});
@@ -63,14 +65,15 @@ function setConnection(ready){
 }
 function draw(){
  const focused=document.activeElement?.closest('[data-node]')?.dataset.node;
- $('#graph').innerHTML=renderGraph(config,actual,{mode,source,selected,highlight:highlightPath});
+ const markup=renderGraph(config,actual,{mode,source,selected,highlight:highlightPath});
+ if(markup!==renderedGraph){$('#graph').innerHTML=markup;renderedGraph=markup;}
  graphView.setSize(1530,mode==='pro'?820:840);
  const c=actual;
  $('#formatText').textContent=`${c.rate?Number(c.rate/1000).toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:3}):'—'} kHz · ${c.bits??'—'} bit · ${c.channels??'—'} MIC`;
  $('#sourceNote').textContent=serial.ready?(lastExampleName?'已应用：'+lastExampleName:'链路跟随设备状态'):'连接设备后显示实际链路';
  document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===mode));
  if(focused)document.querySelector(`[data-node="${focused}"]`)?.focus({preventScroll:true});
- syncPanel();renderDrafts();syncMediaPanel();queueMicrotask(updateDockLayout);
+ syncPanel();renderDrafts();syncMediaPanel();setConnection(serial.ready);queueMicrotask(updateDockLayout);
 }
 function syncPanel(){
  document.querySelectorAll('#panelBody [data-field]').forEach(el=>{const k=el.dataset.field;const v=/^gain[0-3]$/.test(k)?config.gains[+k.at(-1)]:config[k];if(v===undefined||document.activeElement===el)return;if(el.type==='checkbox')el.checked=v;else el.value=v;const o=$('#out-'+k);if(o)o.textContent=v+' '+(el.dataset.unit||'');});
@@ -106,7 +109,7 @@ function syncMediaPanel(){
 function field(label,key,content){return `<label class="field"><span>${label}</span>${content}</label>`;}
 function select(label,key,values,value=config[key]){return field(label,key,`<select data-field="${key}" aria-label="${label}">${values.map(([v,t])=>`<option value="${v}" ${v===value?'selected':''}>${t}</option>`).join('')}</select>`);}
 function toggle(label,key){return `<label class="toggle"><span>${label}</span><input type="checkbox" data-field="${key}" ${config[key]?'checked':''} aria-label="${label}"></label>`;}
-function range(label,key,min,max,value,unit=''){return `<div class="field"><label for="range-${key}">${label}<output id="out-${key}">${value} ${unit}</output></label><div class="range-number"><input id="range-${key}" type="range" min="${min}" max="${max}" step="1" value="${value}" data-field="${key}" data-unit="${unit}" aria-label="${label}"><input type="number" min="${min}" max="${max}" step="1" value="${value}" data-field="${key}" data-unit="${unit}" aria-label="${label} · 数值"></div></div>`;}
+function range(label,key,min,max,value,unit=''){return `<div class="field"><label for="range-${key}">${label}<output id="out-${key}">${value} ${unit}</output></label><div class="range-number"><input id="range-${key}" type="range" min="${min}" max="${max}" step="1" value="${value}" data-field="${key}" data-unit="${unit}" aria-label="${label}"><input type="number" required min="${min}" max="${max}" step="1" value="${value}" data-field="${key}" data-unit="${unit}" aria-label="${label} · 数值"></div></div>`;}
 const action=(id,text)=>`<button data-action="${id}">${text}</button>`;
 const note=s=>`<div class="notice">${s}</div>`;
 const readout=s=>`<div class="readout">${s}</div>`;
@@ -134,7 +137,7 @@ function panel(key){
   body=`<p>ADC0 检测语音活动，经 A1 INT 通知 S31。录音触发需要先准备录音任务。</p>${toggle('启用 VAD 检测','vad')}${toggle('VAD 滤波输出 · 专用模式','vadOutput')}<div class="micro-number">${actual.speech==null?'—':actual.speech?'检测到活动':'无活动'}<br><small>设备事件计数 ${actual.triggers??'—'}</small></div><div class="button-row">${action('vad-status','读取 VAD 状态')}${action('vad-save','保存 FIFO 到 SD')}</div><div class="button-row">${action('vad-prepare','准备 5 秒触发录音')}</div>${readout('VAD 应答：'+known(actual.vad)+'<br>滤波音频输出：'+known(actual.vadOutput))}${note('普通 MIC 采集请关闭“VAD 滤波输出”，仅启用检测。滤波输出会接管 I²S 数据，不再是四路独立 MIC；需先停止波形、录放和 ADC / DAC。FIFO 保存只在专用滤波输出模式可用，也不等于连续预录音。')}`;
  }else if(key==='host'||key==='sd'||key==='playback'){
   title='录音与文件播放';category='HOST / microSD';
-  body=`<p>录音和播放由开发板执行，文件保存在板上的 microSD。</p><div class="button-row">${action('sd-on','挂载 microSD')}${action('sd-off','卸载 microSD')}</div>${field('目标录音时长 / 秒','',`<input id="recordSeconds" type="number" min="1" max="1800" value="${media.recordSeconds}" aria-label="目标录音时长 / 秒">`)}<div class="button-row">${action('record','开始录音')}${action('record-stop','停止录音')}</div><div id="recordProgress" class="readout" hidden></div><div id="recordFile" class="readout" hidden></div><div class="button-row">${action('list-files','读取 SD 文件列表')}</div><div id="sdFiles" class="sd-files"></div>${field('开发板 WAV 路径','',`<input id="playPath" type="text" value="${esc(media.playPath)}" aria-label="开发板 WAV 路径" spellcheck="false">`)}<div class="button-row">${action('play','开始播放')}${action('play-stop','停止播放')}</div><div id="mediaState" class="readout">SD：${known(actual.sd)}<br>录音：${known(actual.recording)}<br>播放：${known(actual.playing)}</div>${note('每次录音使用独立文件名。直接回放请录制单声道或双声道 WAV；多通道文件需先导出选取声道。缓冲录音固件按采样帧计时，单次最长 30 分钟；回放前会核对共享格式。')}`;
+  body=`<p>录音和播放由开发板执行，文件保存在板上的 microSD。</p><div class="button-row">${action('sd-on','挂载 microSD')}${action('sd-off','卸载 microSD')}</div>${field('目标录音时长 / 秒','',`<input id="recordSeconds" type="number" required min="1" max="1800" value="${media.recordSeconds}" aria-label="目标录音时长 / 秒">`)}<div class="button-row">${action('record','开始录音')}${action('record-stop','停止录音')}</div><div id="recordProgress" class="readout" hidden></div><div id="recordFile" class="readout" hidden></div><div class="button-row">${action('list-files','读取 SD 文件列表')}</div><div id="sdFiles" class="sd-files"></div>${field('开发板 WAV 路径','',`<input id="playPath" type="text" value="${esc(media.playPath)}" aria-label="开发板 WAV 路径" spellcheck="false">`)}<div class="button-row">${action('play','开始播放')}${action('play-stop','停止播放')}</div><div id="mediaState" class="readout">SD：${known(actual.sd)}<br>录音：${known(actual.recording)}<br>播放：${known(actual.playing)}</div>${note('每次录音使用独立文件名。直接回放请录制单声道或双声道 WAV；多通道文件需先导出选取声道。缓冲录音固件按采样帧计时，单次最长 30 分钟；回放前会核对共享格式。')}`;
  }else if(key==='registers'){
   title='寄存器';category='PRO / REGISTER INSPECTOR';
   const reg=REGISTERS.find(x=>x.address===registerAddress);
@@ -150,13 +153,13 @@ function panel(key){
   body=`<p>应用后自动关闭旧通路、设置格式并恢复配置中的开关和增益。录放任务运行时先停止任务。</p><div class="readout">${Object.keys(FIELD_LABELS).map(k=>`${esc(FIELD_LABELS[k])}：${esc(formatSetting(k,/^gain/.test(k)?config.gains[+k.at(-1)]:config[k]))}`).join('<br>')}</div><button class="primary" id="applyImported">应用整套配置</button>`;
  }else if(key==='log'){
   title='通信记录';category='DEVICE / COMMAND RESPONSES';
-  body=`<p>保留最近 500 条通信片段。导出记录有助于定位命令失败和串口中断。</p><pre id="serialLog" class="log">${esc(logText()||'尚无通信。')}</pre><button id="downloadLog">导出通信记录</button>`;
+  body=`<p>保留最近 500 条通信片段。导出记录有助于定位命令失败和串口中断。</p><pre id="serialLog" class="log" tabindex="0" role="region" aria-label="通信记录">${esc(logText()||'尚无通信。')}</pre><button id="downloadLog">导出通信记录</button>`;
  }else{return panel('connection');}
  const scopeTarget=/^(?:gain|mic|adc)[0-3]$/.test(key)?['adc',+key.at(-1)]:['adc','vad','interrupt','tdm'].includes(key)?['adc',0]:key==='reference'?['adc',actual.channels??config.channels]:['dac','volume','output','playback'].includes(key)?['dac',0]:null;
  if(scopeTarget){const [kind,ch]=scopeTarget;body+=`<section class="scope-entry"><span class="eyebrow">LIVE / 实板 PCM</span><h3>${kind==='adc'?(ch===actual.channels&&actual.reference?'RE 回采':'ADC'+ch+' 数字输出'):'DAC 播放数据'}</h3><p>${key==='vad'||key==='interrupt'?'显示 ADC0 参考波形，VAD 活动状态独立从芯片读取。':kind==='adc'?'点击开始后连续采集；不会向 microSD 写入文件。':'播放文件时显示实际送入 DAC 的 PCM，非模拟输出测量。'}</p><button class="primary" data-scope="${kind}" data-channel="${ch}">${kind==='adc'?'开始采集波形':'开始查看播放波形'}</button></section>`;}
  $('#panelTitle').textContent=title;$('#panelCategory').textContent=category;$('#panelBody').innerHTML=body;$('#panelBody').scrollTop=0;
  $('#apply').hidden=!applyKind;$('#apply').textContent=applyKind==='clock'?'应用格式':applyKind==='gain'?'应用并核对增益':applyKind==='dac'?'应用播放设置':'应用设置';
- setConnection(serial.ready);status(serial.ready?(key==='examples'?'点击示例即可配置设备。':key==='imported'?'查看参数后点击应用整套配置。':applyKind?'修改参数后点击应用。':'从当前面板选择操作。'):'连接开发板后可应用设置。');draw();
+ setConnection(serial.ready);if(!busy)status(serial.ready?(key==='examples'?'点击示例即可配置设备。':key==='imported'?'查看参数后点击应用整套配置。':applyKind?'修改参数后点击应用。':'从当前面板选择操作。'):'连接开发板后可应用设置。');draw();
 }
 async function command(cmd,expect,options){
  if(!cmd.startsWith('web_'))log(cmd,'send');const response=await serial.command(cmd,options);if(expect&&!expect.test(response))throw Error('缺少预期设备应答：'+cmd);parseState(actual,cmd,response);if(cmd==='web_status'){applySnapshot(actual,telemetry(response,'state'));mergeDeviceConfig(config,actual,dirtyFields);syncTimeInputs();lastSync=Date.now();setConnection(serial.ready);}draw();return response;
@@ -171,7 +174,11 @@ async function run(fn){
  finally{busy=false;setConnection(serial.ready);}
  return completed;
 }
-async function apply(kind=applyKind){await run(async()=>{if(serial.capabilities?.has('web_status'))await command('web_status');const steps=planFor(kind,config,actual,gainIndex);for(const st of steps){status('执行 '+st.command);validateStep(st,await command(st.command));}const keys=moduleFields(kind,gainIndex,config);keys.forEach(k=>dirtyFields.delete(k));});}
+async function apply(kind=applyKind){
+ const invalid=$('#panelBody').querySelector('[data-field]:invalid');if(invalid){invalid.reportValidity();return;}
+ const submission=moduleSubmission(kind,config,gainIndex);
+ await run(async()=>{if(serial.capabilities?.has('web_status'))await command('web_status');const steps=planFor(submission.kind,submission.config,actual,submission.index);for(const st of steps){status('执行 '+st.command);validateStep(st,await command(st.command));}completeSubmission(config,dirtyFields,submission);});
+}
 function setupHooks(){return {send:command,getState:()=>actual,capabilities:serial.capabilities,armed:!!media.pending?.armed,onStep:cmd=>status('执行 '+cmd)};}
 async function useExample(id){
  let result;
@@ -185,7 +192,7 @@ async function useExample(id){
  if(!e.scope)$('#wavePanel').hidden=true;
  if(e.panel)panel(e.panel);else panel('examples');
  if(e.sd&&!await run(listMedia))return;
- if(e.recordSeconds){media.recordSeconds=e.recordSeconds;$('#recordSeconds').value=e.recordSeconds;if(!await actionClick('record'))return;}
+ if(e.recordSeconds){media.recordSeconds=e.recordSeconds;const input=$('#recordSeconds');if(input)input.value=e.recordSeconds;if(!await actionClick('record',{recordSeconds:e.recordSeconds}))return;}
  if(e.scope&&!await startScope(...e.scope))return;
  if(e.scope){$('#inspector').hidden=true;selected='';}
  lastExampleName=e.title;draw();
@@ -206,38 +213,39 @@ async function refresh(show=true){
  const work=async()=>{if(serial.capabilities?.has('web_status')){await command('web_status');return;}for(const cmd of ['set_bits','set_ch','dac_ref'])await command(cmd);};
  if(show)return run(work);await work();
 }
-async function rawWrite(){
- const parseHex=(id)=>{const v=$(id).value.trim().replace(/^0x/i,'');if(!/^[\da-f]{1,2}$/i.test(v))throw Error('请输入 1–2 位十六进制数');return parseInt(v,16);};
- await maskedWrite(registerAddress,parseHex('#regValue'),parseHex('#regMask'),command);
+async function rawWrite(address,value,mask){
+ const parseHex=(input)=>{const v=input.trim().replace(/^0x/i,'');if(!/^[\da-f]{1,2}$/i.test(v))throw Error('请输入 1–2 位十六进制数');return parseInt(v,16);};
+ await maskedWrite(address,parseHex(value),parseHex(mask),command);
 }
-async function actionClick(id){
+async function actionClick(id,context={}){
  if(id==='apply-mute')return apply('adcMute');if(id==='apply-dac')return apply('dac');
+ const channel=gainIndex,address=registerAddress,recordDuration=context.recordSeconds??$('#recordSeconds')?.value,playPath=$('#playPath')?.value,registerValue=$('#regValue')?.value,registerMask=$('#regMask')?.value;
  return run(async()=>{
   switch(id){
    case 'i2s-on':await command('i2s_on',/I2S up:|I2S already up/);break;
    case 'i2s-off':if(actual.recording===true||actual.playing===true)throw Error('先停止录音和播放，再关闭 I²S');if(actual.vad===true)throw Error('先关闭 VAD，再关闭 I²S');await command('i2s_off',/I2S channels down/);break;
-   case 'read-gain':await command(`iic_rd ${hex(0x67+gainIndex,4)} 1`,/\[0x/);break;
+   case 'read-gain':await command(`iic_rd ${hex(0x67+channel,4)} 1`,/\[0x/);break;
    case 'read-gains':await command('iic_rd 0x0067 4',/\[0x/);break;
    case 'read-volume':await command('dac_vol',/DAC vol =/);break;
    case 'vad-status':await command('vad_status',/has_speech=/);break;
-   case 'vad-prepare':if(!serial.capabilities.has('web_record_status'))throw Error('SD 录音需要 v0.4.2 或更新的缓冲录音固件');if(actual.sd!==true)throw Error('先在录音模块挂载 microSD');{const tag=recordingTag('webvad');media.pending={tag,previousPath:media.playPath,armed:true};await command('rec_prepare 5 '+tag,/Recording prepared:/);}break;
+   case 'vad-prepare':if(!serial.capabilities.has('web_record_status'))throw Error('SD 录音需要 v0.4.2 或更新的缓冲录音固件');if(actual.sd!==true)throw Error('先在录音模块挂载 microSD');{const tag=recordingTag('webvad'),pending={tag,previousPath:media.playPath,armed:true};media.pending=pending;try{await command('rec_prepare 5 '+tag,/Recording prepared:/);}catch(error){if(media.pending===pending&&actual.recording!==true)media.pending=null;throw error;}}break;
    case 'vad-save':if(!canSaveFifo(actual))throw Error('FIFO 保存需要挂载 SD 并启用 VAD 专用滤波输出模式');await command('vad_wav /sdcard/vad_'+Date.now()+'.wav',/vad_wav: saved/);media.needsList=true;break;
    case 'sd-on':await command('sdcard_on',/SD card (?:already )?mounted/);if(serial.capabilities.has('fls'))await listMedia();break;
    case 'list-files':await listMedia();break;
    case 'sd-off':if(serial.capabilities.has('web_status'))await command('web_status');if(actual.recording===true||actual.playing===true||media.pending?.armed)throw Error('先停止录音和播放，再卸载 microSD');await command('sdcard_off',/SD card (?:not mounted|unmounted)/);media.files=[];syncMediaPanel();break;
    case 'record':{
-    const sec=recordingSeconds($('#recordSeconds').value);if(!serial.capabilities.has('web_record_status'))throw Error('SD 录音需要 v0.4.2 或更新的缓冲录音固件');if(actual.recording||media.pending?.armed)throw Error('先停止当前录音或已准备的触发录音');
+    const sec=recordingSeconds(recordDuration);if(!serial.capabilities.has('web_record_status'))throw Error('SD 录音需要 v0.4.2 或更新的缓冲录音固件');if(actual.recording||media.pending?.armed)throw Error('先停止当前录音或已准备的触发录音');
     if(actual.i2s!==true||actual.adc!==true||actual.sd!==true)throw Error('先启动 I²S、打开 ADC，并挂载 microSD');
     const tag=recordingTag();media.recordStatus=null;media.recordSeconds=sec;media.pending={tag,previousPath:media.playPath};await command(`rec_on ${sec} ${tag}`,/Recording prepared:|Rec start:|rec_on|record/i);break;
    }
    case 'record-stop':if(media.pending?.armed&&!actual.recording)media.pending=null;actual.recording=null;await command('rec_off');break;
    case 'play':{
-    const path=$('#playPath').value.trim();if(!validWavPath(path))throw Error('使用 /sdcard/ 下无空格的 WAV 路径');
+    const path=playPath.trim();if(!validWavPath(path))throw Error('使用 /sdcard/ 下无空格的 WAV 路径');
     if(actual.i2s!==true||actual.sd!==true)throw Error('先启动 I²S 并挂载 microSD');let info;if(serial.capabilities.has('web_file_info'))info=wavDeviceInfo(await command('web_file_info '+path+' 0'));else{if(!serial.capabilities.has('fsnr'))throw Error('当前固件缺少 WAV 格式读取命令');const item=media.files.find(f=>f.path===path);info=item&&item.bytes<=180000&&serial.capabilities.has('fget')?wavTransferInfo(await command('fget '+path,undefined,{timeout:30000})):wavInfo(await command('fsnr '+path+' 0 0 0.52'));}await command('web_status');playbackGuard(info,actual);media.playPath=path;actual.playing=null;await command('play_on '+path+' 0');break;
    }
    case 'play-stop':actual.playing=null;await command('play_off',/play stop requested/);break;
-   case 'reg-read':await command(`iic_rd ${hex(registerAddress,4)} 1`,/\[0x/);break;
-   case 'reg-write':await rawWrite();break;
+   case 'reg-read':await command(`iic_rd ${hex(address,4)} 1`,/\[0x/);break;
+   case 'reg-write':await rawWrite(address,registerValue,registerMask);break;
   }
  });
 }
@@ -270,7 +278,7 @@ $('#panelBody').addEventListener('input',e=>{
  if(e.target.id==='playPath')media.playPath=e.target.value;if(e.target.id==='recordSeconds')media.recordSeconds=e.target.value;
  const key=e.target.dataset.field;if(!key)return;
  if(key==='registerAddress'){registerAddress=+e.target.value;panel('registers');return;}
- if(e.target.type==='number'&&!e.target.validity.valid)return;
+ if(e.target.type==='number'){e.target.setAttribute('aria-invalid',String(!e.target.validity.valid));if(!e.target.validity.valid){status('请填写范围内的整数，再应用设置。');setConnection(serial.ready);return;}}
  const value=e.target.type==='checkbox'?e.target.checked:Number(e.target.value);
  try{editDraft(config,actual,dirtyFields,key,value);}catch(error){status(error.message,true);return;}
  const out=$('#out-'+key);if(out)out.textContent=value+' '+e.target.dataset.unit;
@@ -310,7 +318,7 @@ async function startScope(kind,ch){
    if(!actual.adc)await command('adc_on');
   }
   monitor={kind,ch};waveFrame=null;waveAt=0;yAutomatic=true;
-  $('#wavePanel').hidden=false;$('#waveTitle').textContent=kind==='adc'?(ch===actual.channels?'RE 回采 · ADC 流':'ADC'+ch+' · 数字输出'):(ch?'DAC R':'DAC L')+' · 播放数据';
+  $('#wavePanel').hidden=false;if(window.innerWidth<850){$('#inspector').hidden=true;selected='';}$('#waveTitle').textContent=kind==='adc'?(ch===actual.channels?'RE 回采 · ADC 流':'ADC'+ch+' · 数字输出'):(ch?'DAC R':'DAC L')+' · 播放数据';
   $('#waveChannel').innerHTML=Array.from({length:kind==='adc'?actual.channels+Number(actual.reference):2},(_,i)=>`<option value="${i}" ${i===ch?'selected':''}>${kind==='adc'?(i===actual.channels?'RE':'ADC '+i):(i?'右声道':'左声道')}</option>`).join('');
   $('#timeWindow').disabled=!serial.capabilities.has('web_scope_window');$('#timeNumber').disabled=$('#timeWindow').disabled;syncTimeInputs();
   $('#wavePanel').classList.toggle('playback-wave',kind==='dac');updateDockLayout();paintWave('正在等待实板 PCM…');
@@ -378,7 +386,7 @@ function updateDockLayout(){
 let drag=null;
 document.querySelectorAll('[data-resize]').forEach(handle=>{
  const key=handle.dataset.resize;
- handle.onpointerdown=e=>{if(e.button!==0)return;e.preventDefault();handle.setPointerCapture(e.pointerId);drag={key,x:e.clientX,width:$(key==='wave'?'#wavePanel':'#inspector').getBoundingClientRect().width};document.body.classList.add('panel-resizing');};
+ handle.onpointerdown=e=>{if(e.button!==0)return;e.preventDefault();handle.focus({preventScroll:true});handle.setPointerCapture(e.pointerId);drag={key,x:e.clientX,width:$(key==='wave'?'#wavePanel':'#inspector').getBoundingClientRect().width};document.body.classList.add('panel-resizing');};
  handle.onpointermove=e=>{if(!drag||drag.key!==key)return;const min=Number(handle.getAttribute('aria-valuemin')),max=Number(handle.getAttribute('aria-valuemax'));panelWidths[key]=Math.max(min,Math.min(max,drag.width+(e.clientX-drag.x)*(key==='wave'?-1:1)));updateDockLayout();};
  const finish=()=>{drag=null;document.body.classList.remove('panel-resizing');try{localStorage.setItem('a1-panel-widths',JSON.stringify(panelWidths));}catch{}};
  handle.onpointerup=finish;handle.onpointercancel=finish;
@@ -398,7 +406,7 @@ function changeTimeWindow(value){
 function rememberTime(){try{localStorage.setItem('a1-scope-window',String(timeWindowMs));}catch{}}
 syncTimeInputs();
 $('#timeWindow').oninput=e=>{changeTimeWindow(e.target.value);$('#timeNumber').value=timeWindowMs;};$('#timeWindow').onchange=rememberTime;
-function commitTime(){const el=$('#timeNumber'),value=el.valueAsNumber,limit=actual.maxWindowMs??10000;if(!Number.isFinite(value)||value<5||value>limit){el.value=timeWindowMs;status('时间窗范围为 5–'+limit+' ms。',true);return;}changeTimeWindow(value);el.value=timeWindowMs;rememberTime();}
+function commitTime(){const el=$('#timeNumber'),value=el.valueAsNumber,limit=actual.maxWindowMs??10000;if(!Number.isInteger(value)||value<5||value>limit){el.value=timeWindowMs;status('时间窗范围为 5–'+limit+' ms，需输入整数。',true);return;}changeTimeWindow(value);el.value=timeWindowMs;rememberTime();}
 $('#timeNumber').onchange=commitTime;$('#timeNumber').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();commitTime();e.target.blur();}};
 $('#waveCanvas').addEventListener('wheel',e=>{if(!e.deltaY)return;e.preventDefault();const r=e.currentTarget.getBoundingClientRect();yBounds=zoomVertical(yBounds.min,yBounds.max,e.deltaY,(e.clientY-r.top)/r.height);yAutomatic=false;paintWave();},{passive:false});
 $('#autoScale').onclick=()=>{yAutomatic=true;paintWave();};

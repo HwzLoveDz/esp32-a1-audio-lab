@@ -1,11 +1,29 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEFAULTS,clone,newActual,planFor,validateStep,REQUIRED} from '../core.mjs';
-import {editDraft,pendingDraft,revertDraft,moduleFields,traceConnections,explainFailure} from '../workbench.mjs';
+import {editDraft,pendingDraft,revertDraft,moduleFields,moduleSubmission,completeSubmission,traceConnections,explainFailure} from '../workbench.mjs';
 import {translate,setLanguage,getLanguage,preferredLanguage} from '../i18n.mjs';
 import {renderGraph} from '../graph.mjs';
 import {A1Serial} from '../serial.mjs';
 import {readFileSync} from 'node:fs';
+
+test('a submitted gain change keeps its channel and value while the user navigates or edits',async()=>{
+ const c=clone(DEFAULTS),dirty=new Set(['gain0','gain1']);c.gains[0]=6;
+ const submission=moduleSubmission('gain',c,0);
+ await Promise.resolve();c.gains[0]=9;c.gains[1]=12;
+ assert.equal(planFor(submission.kind,submission.config,newActual(),submission.index)[0].command,'adc_gain 6 0x01');
+ completeSubmission(c,dirty,submission);assert.ok(dirty.has('gain0'));assert.ok(dirty.has('gain1'));
+ c.gains[0]=6;completeSubmission(c,dirty,submission);assert.ok(!dirty.has('gain0'));assert.ok(dirty.has('gain1'));
+});
+
+test('the shared clock indicator uses confirmed I2S state, including disconnected and stopped states',()=>{
+ for(const state of [null,false,true]){
+  const a=newActual();a.i2s=state;
+  const svg=renderGraph(DEFAULTS,a,{mode:'pro',source:'device'});
+  const node=svg.match(/<g class="graph-node reference (on|off)[^"]*" data-node="clock"/);
+  assert.equal(node?.[1],state===true?'on':'off');
+ }
+});
 
 test('draft changes are validated, tracked and removed when equal to confirmed values',()=>{
  const c=clone(DEFAULTS),a=newActual(),dirty=new Set();a.volume=25;

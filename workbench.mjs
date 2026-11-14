@@ -22,6 +22,14 @@ export function moduleFields(kind,index=0,config=null){
  const groups={clock:['rate','bits','channels'],adc:config?.adc===false?['adc']:['adc','adcMute'],dac:config?.dac===false?['dac']:['dac','dacMute','volume'],gain:['gain'+index],adcMute:['adcMute'],volume:['volume','dacMute'],reference:['reference','referenceChannel'],vad:config?.vad===false?['vad']:['vad','vadOutput']};
  return groups[kind]||[];
 }
+// Capture the user's intent before waiting for a poll or device response.
+export function moduleSubmission(kind,config,index=0){
+ const submitted=validateConfig(clone(config));
+ return {kind,index,config:submitted,keys:moduleFields(kind,index,submitted)};
+}
+export function completeSubmission(config,dirty,submission){
+ for(const key of submission.keys)if(draftValue(config,key)===draftValue(submission.config,key))dirty.delete(key);else dirty.add(key);
+}
 export function revertDraft(config,actual,dirty,keys=Object.keys(FIELD_LABELS)){
  for(const key of keys){const value=deviceValue(actual,key);if(value===null)continue;const trial=clone(config);if(/^gain[0-3]$/.test(key))trial.gains[+key.at(-1)]=value;else trial[key]=value;try{validateConfig(trial);}catch{continue;}if(/^gain[0-3]$/.test(key))config.gains[+key.at(-1)]=value;else config[key]=value;dirty.delete(key);}
  return config;

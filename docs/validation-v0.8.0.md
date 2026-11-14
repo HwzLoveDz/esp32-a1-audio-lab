@@ -12,7 +12,7 @@ Task-created recordings were removed by exact path, previous format/reference an
 
 ## Current screenshots and layout
 
-The current README images were captured from the connected board with web v0.8.0 and firmware v0.4.2. They show the professional four-MIC overview, ADC2 +6 dB register readback, detection-only VAD with a real ten-second PCM window, the simplified duplex/reference layout at DAC volume 20, a ten-second stereo SD recording in progress, and the example picker. The new recording finalized as 160000 frames / 640044 WAV bytes and passed the on-board full-file read. Its task-owned file was removed and the prior device format/reference state restored.
+The images retained in the [v0.8.0 board gallery](board-gallery-v0.8.0.md) were captured from the connected board with web v0.8.0 and firmware v0.4.2. They show the professional four-MIC overview, ADC2 +6 dB register readback, detection-only VAD with a real ten-second PCM window, the simplified duplex/reference layout at DAC volume 20, a ten-second stereo SD recording in progress, and the example picker. The new recording finalized as 160000 frames / 640044 WAV bytes and passed the on-board full-file read. Its task-owned file was removed and the prior device format/reference state restored.
 
 Both diagrams align VAD above TDM and the DAC reference below it. Filtered output, playback-reference input and reference return use vertical branches; the playback row has additional vertical spacing. Switching inspector modules starts at the top of the new panel.
 

@@ -4,7 +4,7 @@ let sequence=0;
 export function recordingTag(prefix='web',now=Date.now()){
  return `${prefix}_${now.toString(36)}_${(++sequence).toString(36)}`;
 }
-export function validWavPath(path){return typeof path==='string'&&/^\/sdcard\/[a-z\d_/-]+\.wav$/i.test(path)&&!path.includes('..');}
+export function validWavPath(path){return typeof path==='string'&&/^\/sdcard\/(?:[a-z\d_-]+\/)*[a-z\d_-]+\.wav$/i.test(path);}
 export function parseFileList(text){
  if(!/^FLS BEGIN \/sdcard\s*$/m.test(text)||!/^FLS END \d+\s*$/m.test(text))throw Error('未收到完整的 SD 文件列表');
  return [...text.matchAll(/^E (\d+) ([^\r\n]+)$/gm)].map(m=>({bytes:Number(m[1]),path:'/sdcard/'+m[2].trim()})).filter(f=>Number.isSafeInteger(f.bytes)&&f.bytes>=0&&validWavPath(f.path));

@@ -1,6 +1,6 @@
 {
   "name": "esp32-a1-audio-lab",
-  "version": "0.8.0",
+  "version": "0.8.2",
   "private": true,
   "type": "module",
   "description": "Local Web Serial audio workbench for compatible ESP32-A1 debug firmware",
@@ -9,7 +9,14 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "node --test tests/*.test.mjs",
-    "build": "node build.mjs"
+    "test": "node --test tests/*.test.mjs tests/quality/*.test.mjs",
+    "build": "node build.mjs",
+    "test:quality": "node --test tests/quality/*.test.mjs",
+    "test:browser": "python tests/quality/server.py"
+  },
+  "devDependencies": {
+    "axe-core": "4.14.0",
+    "fast-check": "4.10.2",
+    "gremlins.js": "2.2.0"
   }
 }

@@ -1,6 +1,12 @@
 // Source-language message catalogue. Protocol keys, raw logs and user input are
 // intentionally not translated. Locale changes never invoke device commands.
 const entries={
+ "请填写范围内的整数，再应用设置。":"Enter an integer within the displayed range before applying.",
+ "需输入整数。":"Enter an integer.",
+ "采样率读回不一致":"Sample-rate readback mismatch",
+ "位深读回不一致":"Sample-width readback mismatch",
+ "输入通道数读回不一致":"Input-channel readback mismatch",
+ "回采配置读回不一致":"Reference readback mismatch",
  "连接只读取设备状态。参数在点击“应用”或运行示例时写入。":"Connecting reads device state. Settings are written when you click Apply or run an example.",
  "点击示例即可配置设备。":"Choose an example to configure the board.",
  "查看参数后点击应用整套配置。":"Review the parameters, then apply the full configuration.",
@@ -103,6 +109,7 @@ const entries={
  "主题": "Theme",
  "语言": "Language",
  "浅色": "Light",
+ "薄荷": "Mint",
  "石墨": "Graphite",
  "深海": "Ocean",
  "松墨": "Pine",

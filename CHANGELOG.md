@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.8.2
+
+- Require explicit values in numeric gain/volume controls, retain useful invalid-input feedback and reject fractional waveform-window lengths.
+- Check actual clock/reference acknowledgement values, clone validated arrays and preserve later draft edits after a submitted response.
+- Reject empty WAV path components.
+- Improve light/Mint text contrast, waveform heading order, keyboard focus and scrollable communication logs.
+- Add locked fast-check/axe/gremlins development dependencies, a portable fail-closed HTTP fixture, guided input/node/workflow coverage and an evidence-gated quality scorecard.
+- Refresh both READMEs and four v0.8.2 interface screenshots; retain v0.8.0 board captures in a separate gallery. Add an isolated interactive HTTP preview without audit controls.
+
+## 0.8.1
+
+- Freeze the target channel, address and parameter values when submitting a module operation, before waiting for device responses.
+- Disable conflicting edits during a write and block application of invalid numeric inputs; keep in-flight status when viewing another module.
+- Keep the recording example independent of whichever panel is visible, and clear a failed VAD preparation without losing immediate recording events.
+- Show the shared clock as enabled only when I²S is confirmed running; retain SVG nodes when telemetry has not changed the graph.
+- Open waveform monitoring above the settings panel on narrow windows.
+- Add the optional light Mint theme and expand the isolated browser fixture. UI validation uses mocked interfaces only; firmware is unchanged.
+
 ## 0.8.0
 
 - Align VAD, TDM and DAC reference blocks with straight vertical branches in both diagrams.

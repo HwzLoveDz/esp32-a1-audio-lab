@@ -13,7 +13,7 @@ export function renderGraph(config,actual,{mode='simple',source='draft',selected
  if(pro){
   n('vad',810,38,180,76,'HARDWARE VAD',state.vad?'检测已选用':'ADC0 · 事件 / FIFO','vad',state.vad);
   n('interrupt',1210,38,220,76,'INT → GPIO7','S31 中断事件','vad',state.vad);
-  n('clock',80,38,190,76,'40 MHz / I²S','时钟、位深与通道数','reference');
+  n('clock',80,38,190,76,'40 MHz / I²S','时钟、位深与通道数','reference',source==='draft'?config.adc||config.dac||config.vad:actual.i2s===true);
   for(let i=0;i<4;i++){
    const y=150+i*82,enabled=state.adc&&i<state.channels;
    const gain=source==='draft'?config.gains[i]:actual.gains[i];

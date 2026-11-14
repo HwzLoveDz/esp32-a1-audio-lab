@@ -1,4 +1,4 @@
-export const VERSION='0.8.0';
+export const VERSION='0.8.2';
 export const RATES=[8000,11025,12000,16000,22050,24000,32000,44100,48000];
 export const DEFAULTS={rate:48000,bits:24,channels:4,gains:[0,0,0,0],adc:true,dac:true,adcMute:false,dacMute:false,volume:25,reference:false,referenceChannel:1,vad:false,vadOutput:false};
 export const REQUIRED=['iic_rd','adc_on','adc_off','dac_on','dac_off','adc_gain','dac_vol','adc_mute','dac_mute','set_rate','set_bits','set_ch','i2s_on','i2s_off','dac_ref','vad_on','vad_off','vad_status'];
@@ -14,7 +14,7 @@ export const clone=v=>JSON.parse(JSON.stringify(v));
 export function validateConfig(input){
  if(!input||typeof input!=='object'||Array.isArray(input))throw Error('配置格式不正确');
  const c=clone(DEFAULTS);
- for(const k of Object.keys(c))if(Object.hasOwn(input,k))c[k]=input[k];
+ for(const k of Object.keys(c))if(Object.hasOwn(input,k))c[k]=Array.isArray(input[k])?[...input[k]]:input[k];
  if(!RATES.includes(c.rate)||![16,24].includes(c.bits)||![1,2,3,4].includes(c.channels))throw Error('采样率、位深或通道数不受当前 SDK 支持');
  if(!Array.isArray(c.gains)||c.gains.length!==4||c.gains.some(x=>!Number.isInteger(x)||x< -64||x>63))throw Error('ADC 增益需为 −64 至 +63 dB 的整数');
  if(!Number.isInteger(c.volume)||c.volume<0||c.volume>100||![1,2].includes(c.referenceChannel))throw Error('音量或回采通道无效');
@@ -87,7 +87,7 @@ export function planFor(kind,c,a=newActual(),index=0){
  switch(kind){
  case 'clock':
   if(a.i2s===true||a.adc===true||a.dac===true||a.vad===true)throw Error('先关闭 VAD、ADC、DAC 和 I²S，再调整共享格式');
-  return [step('set_rate '+c.rate,/Rate =/),step('set_bits '+c.bits,/Bits =/),step('set_ch '+c.channels,/ADC channels =/)];
+  return [step('set_rate '+c.rate,/Rate =/,r=>{if(parseState(newActual(),'',r).rate!==c.rate)throw Error('采样率读回不一致');}),step('set_bits '+c.bits,/Bits =/,r=>{if(parseState(newActual(),'',r).bits!==c.bits)throw Error('位深读回不一致');}),step('set_ch '+c.channels,/ADC channels =/,r=>{if(parseState(newActual(),'',r).channels!==c.channels)throw Error('输入通道数读回不一致');})];
  case 'adc':
   if(!c.adc&&a.recording===true)throw Error('先停止录音，再关闭 ADC');
   if(!c.adc&&a.vad===true)throw Error('先关闭 VAD，再关闭 ADC');
@@ -104,7 +104,7 @@ export function planFor(kind,c,a=newActual(),index=0){
  case 'volume':return [step('dac_vol '+c.volume,/DAC vol =/),step('dac_vol',/DAC vol =/,r=>{if(!new RegExp('DAC vol = '+c.volume+'(?:\\D|$)').test(r))throw Error('DAC 音量读回不一致');}),step('dac_mute '+Number(c.dacMute),/DAC mute =/)];
  case 'reference':
   if(a.i2s===true||a.adc===true||a.dac===true||a.vad===true)throw Error('回采会改变 TDM 帧宽；请先关闭 VAD、ADC、DAC 和 I²S');
-  return [step(`dac_ref ${Number(c.reference)} ${hex(c.referenceChannel)} auto`,/DAC ref =/),step('dac_ref',/DAC ref:/)];
+  return [step(`dac_ref ${Number(c.reference)} ${hex(c.referenceChannel)} auto`,/DAC ref =/),step('dac_ref',/DAC ref:/,r=>{const a=parseState(newActual(),'',r);if(a.reference!==c.reference||a.referenceChannel!==c.referenceChannel)throw Error('回采配置读回不一致');})];
  case 'vad':
   if(c.vad&&a.vad===true&&a.vadOutput!==c.vadOutput)throw Error('VAD 已运行；先关闭，再改变 FIFO 数据输出设置');
   if(c.vad&&c.vadOutput&&(a.adc!==false||a.dac!==false||a.recording===true||a.playing===true||a.scope===true))throw Error('VAD 滤波输出会替换普通采集流。请先停止波形、录放和 ADC / DAC；四路 MIC 采集请保持此选项关闭');
