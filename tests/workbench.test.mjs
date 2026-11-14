@@ -52,7 +52,7 @@ test('port chooser cancellation can be retried without stale connecting state',a
  const s=new A1Serial();await assert.rejects(()=>s.connect({requestPort:async()=>{throw Error('No port selected');}}));assert.equal(s.connecting,false);assert.equal(s.port,null);
 });
 test('plain Chinese UI messages and validation errors have English catalogue coverage',()=>{
- for(const file of ['../app.mjs','../core.mjs','../media.mjs']){
+ for(const file of ['../app.mjs','../core.mjs','../media.mjs','../examples.mjs']){
   const source=readFileSync(new URL(file,import.meta.url),'utf8');
   for(const match of source.matchAll(/(['"])([^'"\n]*[\u4e00-\u9fff][^'"\n]*)\1/g)){
    const text=match[2];if(text.includes('<')||text.length>=180)continue;

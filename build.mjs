@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 import {VERSION} from './core.mjs';
 const dir=path.dirname(fileURLToPath(import.meta.url));
 const read=name=>fs.readFileSync(path.join(dir,name),'utf8');
-const modules=['core.mjs','workbench.mjs','i18n.mjs','serial.mjs','graph.mjs','viewport.mjs','media.mjs'];
+const modules=['core.mjs','workbench.mjs','i18n.mjs','serial.mjs','graph.mjs','viewport.mjs','media.mjs','examples.mjs'];
 const bundle=modules.map((name,i)=>{
  const source=read(name),names=[...source.matchAll(/^export (?:async )?(?:const|function|class) (\w+)/gm)].map(m=>m[1]);
  const body=source.replace(/^import .*?;\s*$/gm,'').replace(/^export /gm,'');

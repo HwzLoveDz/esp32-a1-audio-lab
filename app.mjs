@@ -1,4 +1,5 @@
 import {VERSION,DEFAULTS,RATES,REGISTERS,clone,validateConfig,newActual,planFor,validateStep,parseState,maskedWrite,hex,stripTerminal,serialLogLines,telemetry,applySnapshot,validateWave,mergeDeviceConfig,zoomVertical} from './core.mjs';
+import {EXAMPLES,applyExample,applySetup} from './examples.mjs';
 import {A1Serial} from './serial.mjs';
 import {FIELD_LABELS,editDraft,pendingDraft,moduleFields,revertDraft,formatSetting,explainFailure} from './workbench.mjs';
 import {installLanguage} from './i18n.mjs';
@@ -11,12 +12,12 @@ document.title='ESP32-A1 Audio Lab · v'+VERSION;$('.version').textContent='v'+V
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dirtyFields=new Set();
 const media={files:[],playPath:'',recordSeconds:5,pending:null,lastRecording:null,needsList:false,error:null,recordStatus:null};
-let lastOperation={text:'',error:false},highlightPath=true;
+let lastOperation={text:'',error:false},highlightPath=true,importedConfig=null,lastExampleName='';
 try{const saved=localStorage.getItem('a1-lab-mode');if(saved==='pro')queueMicrotask(()=>{mode='pro';draw();});}catch{}
 let yAutomatic=true,yBounds={min:-1,max:1};
 let timeWindowMs=50;try{const saved=Number(localStorage.getItem("a1-scope-window"));if(saved>=5&&saved<=10000)timeWindowMs=Math.round(saved);}catch{}
 let monitor=null,pollTimer=null,lastSync=0,polling=false,waveFrame=null,waveAt=0;
-let config=clone(DEFAULTS),actual=newActual(),mode='simple',source='draft',selected='',applyKind='',gainIndex=0,busy=false,logs=[],partial='',registerAddress=0x67;
+let config=clone(DEFAULTS),actual=newActual(),mode='simple',source='device',selected='',applyKind='',gainIndex=0,busy=false,logs=[],partial='',registerAddress=0x67;
 const graphView=new GraphViewport($('#graphScroll'),$('#graph'),{overlays:[$('#inspector'),$('#wavePanel')],onChange:(view,auto)=>{$('#zoomText').textContent=Math.round(view.scale*100)+'%';$('#fit').setAttribute('aria-pressed',String(auto));}});
 const serial=new A1Serial({onData:receive,onDisconnect:()=>{media.recordStatus=null;media.pending=null;monitor=null;waveFrame=null;clearTimeout(pollTimer);actual=newActual();setConnection(false);paintWave('设备已断开');draw();}});
 function log(text,kind='device'){
@@ -43,11 +44,9 @@ function status(text,error=false){
  $('#workspaceStatus').textContent=failure?.title||text;$('#workspaceHint').textContent=failure?.hint||'';$('#workspaceLog').hidden=!error;
 }
 function renderDrafts(){
- const entries=pendingDraft(config,actual,dirtyFields);$('#pendingCount').textContent=entries.length;$('#pendingDraftButton').disabled=!entries.length;
- const keys=moduleFields(applyKind,gainIndex),local=entries.filter(e=>keys.includes(e.key));
+ const entries=pendingDraft(config,actual,dirtyFields),keys=moduleFields(applyKind,gainIndex),local=entries.filter(e=>keys.includes(e.key));
  $('#moduleDraft').hidden=!local.length;
- $('#moduleDraft').innerHTML=local.length?`<div class="draft-title"><strong>待写入 · ${local.length}</strong><button id="revertModule" class="plain" ${local.some(e=>e.device!==null&&(!e.key.startsWith('gain')||Number.isInteger(e.device)))?'':'disabled'}>恢复本模块</button></div>${local.map(e=>`<div class="draft-row"><span>${esc(e.label)}</span><span>${esc(formatSetting(e.key,e.device))}<i>→</i><b>${esc(formatSetting(e.key,e.draft))}</b></span></div>`).join('')}`:'';
- if(selected==='changes')$('#panelBody').innerHTML=`<p>设备状态与草稿分开显示</p>${entries.length?entries.map(e=>`<button class="change-item" data-open="${e.key.startsWith('gain')?e.key:['rate','bits','channels'].includes(e.key)?'clock':['dac','volume','dacMute'].includes(e.key)?'dac':e.key.startsWith('reference')?'reference':e.key.startsWith('vad')?'vad':'adc'}"><strong>${esc(e.label)}</strong><span>${esc(formatSetting(e.key,e.device))} → ${esc(formatSetting(e.key,e.draft))}</span></button>`).join('')+'<button id="revertAll" class="plain">恢复为设备值</button>':'<div class="notice">没有待写入参数</div>'}`;
+ $('#moduleDraft').innerHTML=local.length?`<div class="draft-title"><strong>有未应用更改 · ${local.length}</strong><button id="revertModule" class="plain" ${local.some(e=>e.device!==null)?'':'disabled'}>撤销修改</button></div>`:'';
 }
 
 function setConnection(ready){
@@ -57,6 +56,7 @@ function setConnection(ready){
  $('#deviceMeta').textContent='固件：'+(actual.firmwareVersion??'未读取');
  $('#liveSync').textContent=ready?(serial.capabilities?.has('web_status')?(actual.syncAt?'状态实时同步 · '+new Date(actual.syncAt).toLocaleTimeString():'正在读取设备状态'):'当前固件无实时遥测接口'):'设备未连接';
  $('#apply').disabled=!ready||busy;
+ document.querySelectorAll('[data-example],#applyImported').forEach(b=>{b.disabled=!ready||busy;});
  const verbs={'reg-write':'iic_wr','sd-on':'sdcard_on','sd-off':'sdcard_off','record':'rec_on','record-stop':'rec_off','play':'play_on','play-stop':'play_off','vad-save':'vad_wav','vad-prepare':'rec_prepare','list-files':'fls'};
  document.querySelectorAll('[data-scope]').forEach(b=>{b.disabled=!ready||busy||!serial.capabilities?.has('web_scope');});
  document.querySelectorAll('[data-action]').forEach(b=>{const missing=ready&&verbs[b.dataset.action]&&!serial.capabilities?.has(verbs[b.dataset.action]);const fifoBlocked=b.dataset.action==='vad-save'&&!canSaveFifo(actual);const bufferedMissing=['record','vad-prepare'].includes(b.dataset.action)&&ready&&!serial.capabilities?.has('web_record_status');const recordBusy=b.dataset.action==='record'&&actual.recording===true;b.disabled=!ready||busy||missing||fifoBlocked||bufferedMissing||recordBusy;b.title=bufferedMissing?'SD 录音需要 v0.4.2 或更新的缓冲录音固件':recordBusy?'录音正在进行':missing?'当前固件未提供此命令':fifoBlocked?'FIFO 保存需要挂载 SD 并启用 VAD 专用滤波输出模式':'';});
@@ -64,12 +64,11 @@ function setConnection(ready){
 function draw(){
  const focused=document.activeElement?.closest('[data-node]')?.dataset.node;
  $('#graph').innerHTML=renderGraph(config,actual,{mode,source,selected,highlight:highlightPath});
- graphView.setSize(1530,mode==='pro'?700:680);
- const c=source==='draft'?config:actual;
+ graphView.setSize(1530,mode==='pro'?820:840);
+ const c=actual;
  $('#formatText').textContent=`${c.rate?Number(c.rate/1000).toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:3}):'—'} kHz · ${c.bits??'—'} bit · ${c.channels??'—'} MIC`;
- $('#sourceNote').textContent=source==='draft'?'配置草稿 · 修改不会自动下发':serial.ready?`设备应答 · ${actual.updated?new Date(actual.updated).toLocaleTimeString():'尚未读取'} · 未知通路不点亮`:'设备状态未知 · 请连接兼容的 a1_cli';
+ $('#sourceNote').textContent=serial.ready?(lastExampleName?'已应用：'+lastExampleName:'链路跟随设备状态'):'连接设备后显示实际链路';
  document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===mode));
- document.querySelectorAll('[data-source]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.source===source));
  if(focused)document.querySelector(`[data-node="${focused}"]`)?.focus({preventScroll:true});
  syncPanel();renderDrafts();syncMediaPanel();queueMicrotask(updateDockLayout);
 }
@@ -87,7 +86,7 @@ function syncPanel(){
  else if(selected==='adc'||selected==='mic0'||/^adc[0-3]$/.test(selected))text='ADC 通路应答：'+known(actual.adc)+'<br>静音应答：'+known(actual.adcMute);
  else if(['volume','dac','output'].includes(selected))text='设备音量：'+(actual.volume??'—')+' / 100<br>DAC 通路：'+known(actual.dac)+'<br>静音应答：'+known(actual.dacMute);
  else if(['clock','tdm'].includes(selected))text='I²S 应答：'+known(actual.i2s)+'<br>EV Board：SDA 46 / SCL 45<br>BCLK 37 / WS 1 / DOUT 35 / DIN 6<br>Codec I²C：7-bit 0x2C';
- else if(selected==='reference')text='回采配置应答：'+known(actual.reference)+'<br>草稿采集布局：'+['FL','FR','BL','BR'].slice(0,config.channels).concat(config.reference?['RE']:[]).join(' · ');
+ else if(selected==='reference')text='回采配置应答：'+known(actual.reference)+'<br>当前采集布局：'+['FL','FR','BL','BR'].slice(0,actual.channels??0).concat(actual.reference?['RE']:[]).join(' · ');
  else if(['vad','interrupt'].includes(selected))text='VAD 应答：'+known(actual.vad)+'<br>滤波音频输出：'+known(actual.vadOutput);
  else if(['host','sd','playback'].includes(selected))text='SD：'+known(actual.sd)+'<br>录音：'+known(actual.recording)+'<br>播放：'+known(actual.playing);
  if(text)r.innerHTML=text;
@@ -129,7 +128,7 @@ function panel(key){
   body=`${select('采样率','rate',RATES.map(v=>[v,(v/1000)+' kHz']))}${select('音频位深','bits',[[16,'16 bit'],[24,'24 bit']])}${select('模拟输入通道','channels',[[1,'1 路 MIC'],[2,'2 路 MIC'],[3,'3 路 MIC'],[4,'4 路 MIC']])}<div class="button-row">${action('i2s-on','启动 I²S')}${action('i2s-off','关闭 I²S')}</div>${readout('I²S 应答：'+known(actual.i2s)+'<br>EV Board：SDA 46 / SCL 45<br>BCLK 37 / WS 1 / DOUT 35 / DIN 6<br>Codec I²C：7-bit 0x2C')}${note('更改格式前关闭 VAD、ADC、DAC 和 I²S。回采开启时，采集槽增加 RE；播放槽仍只覆盖自己的左右声道。外部 40 MHz 与 Host MCLK 不能混为一谈。')}<button class="plain" data-open="reference">设置 DAC 回采 →</button>`;
  }else if(key==='reference'){
   title='DAC 回采参考';category='REFERENCE / RE CHANNEL';applyKind='reference';
-  body=`<p>从 DAC 左右声道选一路，作为采集流里的 RE 参考槽。RE 可供主控侧 AEC 使用。</p>${toggle('启用 DAC 回采','reference')}${select('参考声道','referenceChannel',[[1,'DAC 左声道'],[2,'DAC 右声道']])}${readout('回采配置应答：'+known(actual.reference)+'<br>采集布局：'+['FL','FR','BL','BR'].slice(0,config.channels).concat(config.reference?['RE']:[]).join(' · '))}${note('这是回采路径，不表示 A1 已执行回声消除。修改前需关闭 VAD、ADC、DAC 和 I²S；采集 RE 时需保持 DAC 数据通路工作。')}`;
+  body=`<p>从 DAC 左右声道选一路，作为采集流里的 RE 参考槽。RE 可供主控侧 AEC 使用。</p>${toggle('启用 DAC 回采','reference')}${select('参考声道','referenceChannel',[[1,'DAC 左声道'],[2,'DAC 右声道']])}${readout('回采配置应答：'+known(actual.reference)+'<br>采集布局：'+['FL','FR','BL','BR'].slice(0,actual.channels??0).concat(actual.reference?['RE']:[]).join(' · '))}${note('这是回采路径，不表示 A1 已执行回声消除。修改前需关闭 VAD、ADC、DAC 和 I²S；采集 RE 时需保持 DAC 数据通路工作。')}`;
  }else if(key==='vad'||key==='interrupt'){
   title='硬件 VAD';category='DETECTION / ADC0';applyKind='vad';
   body=`<p>ADC0 检测语音活动，经 A1 INT 通知 S31。录音触发需要先准备录音任务。</p>${toggle('启用 VAD 检测','vad')}${toggle('VAD 滤波输出 · 专用模式','vadOutput')}<div class="micro-number">${actual.speech==null?'—':actual.speech?'检测到活动':'无活动'}<br><small>设备事件计数 ${actual.triggers??'—'}</small></div><div class="button-row">${action('vad-status','读取 VAD 状态')}${action('vad-save','保存 FIFO 到 SD')}</div><div class="button-row">${action('vad-prepare','准备 5 秒触发录音')}</div>${readout('VAD 应答：'+known(actual.vad)+'<br>滤波音频输出：'+known(actual.vadOutput))}${note('普通 MIC 采集请关闭“VAD 滤波输出”，仅启用检测。滤波输出会接管 I²S 数据，不再是四路独立 MIC；需先停止波形、录放和 ADC / DAC。FIFO 保存只在专用滤波输出模式可用，也不等于连续预录音。')}`;
@@ -142,30 +141,60 @@ function panel(key){
   body=`<p>16 位地址、8 位数据。读取会访问板上 A1；不存在或未初始化的接口会返回错误。</p>${select('寄存器','registerAddress',REGISTERS.map(r=>[r.address,hex(r.address,4)+' · '+r.name]),registerAddress)}<div class="reg-value">${actual.registers[registerAddress]==null?'—':hex(actual.registers[registerAddress])}</div><div class="button-row">${action('reg-read','读取寄存器')}</div>${reg?.writable?`${field('写入值 / hex','',`<input id="regValue" type="text" value="80" aria-label="寄存器写入值" spellcheck="false">`)}${field('位掩码 / hex','',`<input id="regMask" type="text" value="ff" aria-label="寄存器位掩码" spellcheck="false">`)}<div class="button-row">${action('reg-write','掩码写入并核对')}</div>${note('仅开放已核对的增益寄存器。直接写入会绕过驱动缓存；常规调节请使用增益模块。读回不一致时尝试恢复本次涉及的位。')}`:note('此地址只读。复位、时钟、校准、eFuse 与未核对字段不开放写入。')}<div class="reg-list">${REGISTERS.map(r=>`<button data-reg="${r.address}"><span>${hex(r.address,4)}　${esc(r.name)}</span><b>${actual.registers[r.address]==null?'—':hex(actual.registers[r.address])}</b></button>`).join('')}</div>`;
  }else if(key==='connection'){
   title='连接与板卡';category='DEVICE / ESP32-A1 EV BOARD';
-  body=`<span class="chip-tag">S31 主控 → I²C / I²S → A1 Codec</span><p style="margin-top:18px">使用桌面 Chrome / Edge，连接 EV Board 的 USB 数据口，然后选择对应串口。网页会读取 help 并核对命令，再开放写入。</p>${readout('网页：v'+VERSION+'<br>固件：'+(actual.firmwareVersion??'未读取')+'<br>延迟：'+(serial.lastLatencyMs==null?'—':serial.lastLatencyMs+' ms')+'<br>协议：原厂 a1_cli / 115200 baud<br>当前：'+(serial.ready?'已识别兼容 CLI':'尚未识别')+'<br>USB：'+(serial.port?.getInfo?JSON.stringify(serial.port.getInfo()):'未选择'))}<div class="button-row"><button id="panelConnect">${serial.port?'断开连接':'连接开发板'}</button></div>${note('声音钥匙固件和 a1_cli 使用不同协议。若板上仍是声音钥匙，本页会拒绝参数写入，需要另行切换固件；网页不会自动烧录或重置开发板。')}<p>当前状态来自命令应答或寄存器读回，不代表测到了实际音频。未查询到的状态显示未知。</p>`;
- }else if(key==='changes'){title='待写入参数';category='DRAFT / DEVICE COMPARISON';body='';
+  body=`<span class="chip-tag">S31 主控 → I²C / I²S → A1 Codec</span><p style="margin-top:18px">使用桌面 Chrome / Edge，连接 EV Board 的 USB 数据口，然后选择对应串口。网页会读取 help 并核对命令，再开放写入。</p>${readout('网页：v'+VERSION+'<br>固件：'+(actual.firmwareVersion??'未读取')+'<br>延迟：'+(serial.lastLatencyMs==null?'—':serial.lastLatencyMs+' ms')+'<br>协议：原厂 a1_cli / 115200 baud<br>当前：'+(serial.ready?'已识别兼容 CLI':'尚未识别')+'<br>USB：'+(serial.port?.getInfo?JSON.stringify(serial.port.getInfo()):'未选择'))}<div class="button-row"><button id="panelConnect">${serial.port?'断开连接':'连接开发板'}</button></div>${note('连接只读取设备状态。参数在点击“应用”或运行示例时写入。')}<p>当前状态来自命令应答或寄存器读回，不代表测到了实际音频。未查询到的状态显示未知。</p>`;
+ }else if(key==='examples'){
+  title='常用示例';category='QUICK START';
+  body=`<p>连接开发板后点击示例，自动配置通路并读回核对。切换示例会停止当前波形；录放任务运行时先停止任务。</p><div class="example-list">${EXAMPLES.map(e=>`<button class="example-card ${e.stop?'stop-example':''}" data-example="${e.id}"><span class="example-label">${e.title}<span aria-hidden="true">↗</span></span><small>${e.format}</small><span>${e.detail}</span><b>${e.stop?'停止全部':'一键应用'}</b></button>`).join('')}</div>`;
+ }else if(key==='imported'){
+  title='导入的配置';category='CONFIGURATION';
+  body=`<p>应用后自动关闭旧通路、设置格式并恢复配置中的开关和增益。录放任务运行时先停止任务。</p><div class="readout">${Object.keys(FIELD_LABELS).map(k=>`${esc(FIELD_LABELS[k])}：${esc(formatSetting(k,/^gain/.test(k)?config.gains[+k.at(-1)]:config[k]))}`).join('<br>')}</div><button class="primary" id="applyImported">应用整套配置</button>`;
  }else if(key==='log'){
   title='通信记录';category='DEVICE / COMMAND RESPONSES';
   body=`<p>保留最近 500 条通信片段。导出记录有助于定位命令失败和串口中断。</p><pre id="serialLog" class="log">${esc(logText()||'尚无通信。')}</pre><button id="downloadLog">导出通信记录</button>`;
  }else{return panel('connection');}
  const scopeTarget=/^(?:gain|mic|adc)[0-3]$/.test(key)?['adc',+key.at(-1)]:['adc','vad','interrupt','tdm'].includes(key)?['adc',0]:key==='reference'?['adc',actual.channels??config.channels]:['dac','volume','output','playback'].includes(key)?['dac',0]:null;
  if(scopeTarget){const [kind,ch]=scopeTarget;body+=`<section class="scope-entry"><span class="eyebrow">LIVE / 实板 PCM</span><h3>${kind==='adc'?(ch===actual.channels&&actual.reference?'RE 回采':'ADC'+ch+' 数字输出'):'DAC 播放数据'}</h3><p>${key==='vad'||key==='interrupt'?'显示 ADC0 参考波形，VAD 活动状态独立从芯片读取。':kind==='adc'?'点击开始后连续采集；不会向 microSD 写入文件。':'播放文件时显示实际送入 DAC 的 PCM，非模拟输出测量。'}</p><button class="primary" data-scope="${kind}" data-channel="${ch}">${kind==='adc'?'开始采集波形':'开始查看播放波形'}</button></section>`;}
- $('#panelTitle').textContent=title;$('#panelCategory').textContent=category;$('#panelBody').innerHTML=body;
- $('#apply').hidden=!applyKind;$('#apply').textContent=applyKind==='clock'?'写入格式配置':applyKind==='gain'?'写入并读回增益':applyKind==='dac'?'写入播放设置':'写入此模块';
- setConnection(serial.ready);status(serial.ready?'已连接。修改后点击写入，不会自动下发。':'修改保存在草稿中。连接兼容的 a1_cli 后可写入。');draw();
+ $('#panelTitle').textContent=title;$('#panelCategory').textContent=category;$('#panelBody').innerHTML=body;$('#panelBody').scrollTop=0;
+ $('#apply').hidden=!applyKind;$('#apply').textContent=applyKind==='clock'?'应用格式':applyKind==='gain'?'应用并核对增益':applyKind==='dac'?'应用播放设置':'应用设置';
+ setConnection(serial.ready);status(serial.ready?(key==='examples'?'点击示例即可配置设备。':key==='imported'?'查看参数后点击应用整套配置。':applyKind?'修改参数后点击应用。':'从当前面板选择操作。'):'连接开发板后可应用设置。');draw();
 }
 async function command(cmd,expect,options){
  if(!cmd.startsWith('web_'))log(cmd,'send');const response=await serial.command(cmd,options);if(expect&&!expect.test(response))throw Error('缺少预期设备应答：'+cmd);parseState(actual,cmd,response);if(cmd==='web_status'){applySnapshot(actual,telemetry(response,'state'));mergeDeviceConfig(config,actual,dirtyFields);syncTimeInputs();lastSync=Date.now();setConnection(serial.ready);}draw();return response;
 }
 async function run(fn){
+ let completed=false;
  if(busy)return;if(!serial.ready){status('请先连接并识别兼容的 a1_cli。',true);return;}
- busy=true;setConnection(serial.ready);status('等待设备应答…');
+ busy=true;lastExampleName='';setConnection(serial.ready);status('等待设备应答…');
  while(polling||serial.pending){if(!serial.ready){busy=false;setConnection(false);return;}await new Promise(r=>setTimeout(r,25));}
- try{media.error=null;await fn();if(serial.capabilities?.has('web_status'))await command('web_status');source='device';draw();if(media.error)status(media.error,true);else status('设备应答已收到。');}
+ try{media.error=null;await fn();if(serial.capabilities?.has('web_status'))await command('web_status');source='device';draw();if(media.error)status(media.error,true);else status('设备应答已收到。');completed=!media.error;}
  catch(e){const message=e.message;if(serial.ready&&serial.capabilities?.has('web_status')){try{await command('web_status');source='device';draw();}catch{actual=newActual();draw();}}status(message,true);log(message,'error');}
  finally{busy=false;setConnection(serial.ready);}
+ return completed;
 }
 async function apply(kind=applyKind){await run(async()=>{if(serial.capabilities?.has('web_status'))await command('web_status');const steps=planFor(kind,config,actual,gainIndex);for(const st of steps){status('执行 '+st.command);validateStep(st,await command(st.command));}const keys=moduleFields(kind,gainIndex,config);keys.forEach(k=>dirtyFields.delete(k));});}
+function setupHooks(){return {send:command,getState:()=>actual,capabilities:serial.capabilities,armed:!!media.pending?.armed,onStep:cmd=>status('执行 '+cmd)};}
+async function useExample(id){
+ let result;
+ const ok=await run(async()=>{
+  result=await applyExample(id,{...setupHooks(),onStep:cmd=>{if(cmd==='web_scope stop'){monitor=null;waveFrame=null;paintWave('已停止');}status('执行 '+cmd);}});
+  monitor=null;waveFrame=null;paintWave('已停止');
+  if(result.config){config=clone(result.config);dirtyFields.clear();}else{media.pending=null;dirtyFields.clear();mergeDeviceConfig(config,actual,dirtyFields);}
+ });
+ if(!ok)return;
+ const e=result.example;
+ if(!e.scope)$('#wavePanel').hidden=true;
+ if(e.panel)panel(e.panel);else panel('examples');
+ if(e.sd&&!await run(listMedia))return;
+ if(e.recordSeconds){media.recordSeconds=e.recordSeconds;$('#recordSeconds').value=e.recordSeconds;if(!await actionClick('record'))return;}
+ if(e.scope&&!await startScope(...e.scope))return;
+ if(e.scope){$('#inspector').hidden=true;selected='';}
+ lastExampleName=e.title;draw();
+ status(e.stop?'音频任务已停止。':e.recordSeconds?'示例已应用，正在录制 10 秒。':e.id==='playback'?'播放通路已就绪，选择 WAV 文件后点击开始播放。':'示例已应用并核对。');
+}
+async function applyImported(){
+ const target=clone(importedConfig),ok=await run(async()=>{await applySetup(target,{...setupHooks(),onStep:cmd=>{if(cmd==='web_scope stop'){monitor=null;waveFrame=null;paintWave('已停止');}status('执行 '+cmd);}});monitor=null;waveFrame=null;paintWave('已停止');config=target;dirtyFields.clear();importedConfig=null;});
+ if(ok){lastExampleName='导入的配置';panel('examples');status('配置已应用并核对。');}
+}
 async function connect(){
  if(serial.port){const cleaned=await serial.disconnect();status(cleaned===false?'串口释放未完成，请关闭其他客户端或重插数据 USB。':'串口已断开；设备状态已清空。',cleaned===false);return;}
  if(busy)return;busy=true;setConnection(false);$('#connect').disabled=true;
@@ -220,15 +249,16 @@ $('#connect').onclick=connect;$('#tools').onclick=()=>$('#toolMenu').hidden=!$('
 $('#closePanel').onclick=()=>{$('#inspector').hidden=true;selected='';draw();};
 $('#apply').onclick=()=>{if(applyKind==='adc'&&!config.adc&&actual.vad===true){status('先关闭 VAD，再关闭 ADC。',true);return;}apply();};
 $('#refresh').onclick=()=>{if($('#inspector').hidden)panel('connection');refresh();};
+$('#showExamples').onclick=()=>panel('examples');
 $('#showConnection').onclick=()=>panel('connection');$('#showRegisters').onclick=()=>panel('registers');$('#showLog').onclick=()=>panel('log');$('#exportLog').onclick=exportLog;
 $('#exportConfig').onclick=()=>{download('ESP32-A1-config.json',JSON.stringify({schema:'a1-audio-lab/1',version:VERSION,config},null,2));$('#toolMenu').hidden=true;};
 $('#importConfig').onclick=()=>{$('#toolMenu').hidden=true;$('#configFile').click();};
-$('#configFile').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>32768)throw Error('配置文件超过 32 KiB');const data=JSON.parse(await file.text());if(data.schema!=='a1-audio-lab/1')throw Error('不是 A1 Audio Lab 配置');config=validateConfig(data.config);Object.keys(FIELD_LABELS).forEach(k=>dirtyFields.add(k));source=serial.ready?'device':'draft';panel('clock');status('配置已导入草稿，未向设备写入。');}catch(e){panel('connection');status(e.message,true);}finally{$('#configFile').value='';}};
-document.addEventListener('click',e=>{
+$('#configFile').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>32768)throw Error('配置文件超过 32 KiB');const data=JSON.parse(await file.text());if(data.schema!=='a1-audio-lab/1')throw Error('不是 A1 Audio Lab 配置');importedConfig=validateConfig(data.config);config=clone(importedConfig);Object.keys(FIELD_LABELS).forEach(k=>dirtyFields.add(k));panel('imported');status('配置已载入，点击应用整套配置写入设备。');}catch(e){panel('connection');status(e.message,true);}finally{$('#configFile').value='';}};document.addEventListener('click',e=>{
+ const example=e.target.closest('[data-example]');if(example){useExample(example.dataset.example);return;}
+ if(e.target.id==='applyImported'){applyImported();return;}
  const file=e.target.closest('[data-media-path]');if(file){media.playPath=file.dataset.mediaPath;const input=$('#playPath');if(input)input.value=media.playPath;syncMediaPanel();return;}
  const scopeButton=e.target.closest('[data-scope]');if(scopeButton){startScope(scopeButton.dataset.scope,+scopeButton.dataset.channel);return;}
  const modeButton=e.target.closest('[data-mode]');if(modeButton){mode=modeButton.dataset.mode;try{localStorage.setItem('a1-lab-mode',mode);}catch{}draw();return;}
- const sourceButton=e.target.closest('[data-source]');if(sourceButton){source=sourceButton.dataset.source;draw();return;}
  const node=e.target.closest('[data-node]');if(node){panel(node.dataset.node);return;}
  const open=e.target.closest('[data-open]');if(open){panel(open.dataset.open);return;}
  const act=e.target.closest('[data-action]');if(act){actionClick(act.dataset.action);return;}
@@ -244,7 +274,7 @@ $('#panelBody').addEventListener('input',e=>{
  const value=e.target.type==='checkbox'?e.target.checked:Number(e.target.value);
  try{editDraft(config,actual,dirtyFields,key,value);}catch(error){status(error.message,true);return;}
  const out=$('#out-'+key);if(out)out.textContent=value+' '+e.target.dataset.unit;
- source=serial.ready?'device':'draft';draw();status(pendingDraft(config,actual,dirtyFields).length?'草稿已修改，尚未向设备写入。':'草稿与已读取的设备值一致。');
+ source='device';draw();status(pendingDraft(config,actual,dirtyFields).length?'参数已修改，点击应用生效。':'参数与设备一致。');
 });
 $('#zoomIn').onclick=()=>graphView.zoom(1.2);$('#zoomOut').onclick=()=>graphView.zoom(1/1.2);$('#fit').onclick=()=>graphView.fit();
 window.addEventListener('pagehide',()=>{monitor=null;clearTimeout(pollTimer);clearInterval(freshnessTimer);languageUI.dispose();graphView.dispose();canvasObserver.disconnect();dockObserver.disconnect();serial.disconnect();});
@@ -269,7 +299,7 @@ async function pollLive(){
  finally{polling=false;schedulePoll(monitor?100:1000);}
 }
 async function startScope(kind,ch){
- await run(async()=>{
+ const ok=await run(async()=>{
   if(!serial.capabilities.has('web_scope'))throw Error('需要更新带实时波形接口的固件');
   await command('web_status');
   await serial.command('web_scope stop');
@@ -284,7 +314,7 @@ async function startScope(kind,ch){
   $('#waveChannel').innerHTML=Array.from({length:kind==='adc'?actual.channels+Number(actual.reference):2},(_,i)=>`<option value="${i}" ${i===ch?'selected':''}>${kind==='adc'?(i===actual.channels?'RE':'ADC '+i):(i?'右声道':'左声道')}</option>`).join('');
   $('#timeWindow').disabled=!serial.capabilities.has('web_scope_window');$('#timeNumber').disabled=$('#timeWindow').disabled;syncTimeInputs();
   $('#wavePanel').classList.toggle('playback-wave',kind==='dac');updateDockLayout();paintWave('正在等待实板 PCM…');
- });schedulePoll(20);
+ });if(ok)schedulePoll(20);return ok;
 }
 async function stopScope(){
  monitor=null;waveFrame=null;paintWave('已停止');
@@ -376,13 +406,12 @@ const canvasObserver=new ResizeObserver(()=>{const canvas=$('#waveCanvas'),r=can
 const dockObserver=new ResizeObserver(updateDockLayout);dockObserver.observe($('.topbar'));dockObserver.observe($('.legend'));window.addEventListener('resize',updateDockLayout);updateDockLayout();
 
 // Display-only controls. None of these send device commands.
-$('#pendingDraftButton').onclick=()=>panel('changes');
 $('#workspaceLog').onclick=()=>{const saved=lastOperation;panel('log');status(saved.text,saved.error);};
 $('#highlightPath').onchange=e=>{highlightPath=e.target.checked;draw();};
 document.addEventListener('click',e=>{
- if(e.target.id==='revertModule'||e.target.id==='revertAll'){
-  revertDraft(config,actual,dirtyFields,e.target.id==='revertModule'?moduleFields(applyKind,gainIndex):Object.keys(FIELD_LABELS));
-  draw();status('已恢复可读取的设备值。未读取的字段保留草稿。');
+ if(e.target.id==='revertModule'){
+  revertDraft(config,actual,dirtyFields,moduleFields(applyKind,gainIndex));
+  draw();status('已恢复读取到的设备值。');
  }
  if(!e.target.closest('#tools,#toolMenu'))$('#toolMenu').hidden=true;
 });

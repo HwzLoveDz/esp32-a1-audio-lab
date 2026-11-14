@@ -124,3 +124,8 @@ html[lang=en] .micro-number{font-size:28px;overflow-wrap:anywhere;line-height:1.
 #recordProgress progress{display:block;width:100%;height:7px;margin-top:10px;accent-color:var(--teal)}
 
 #recordFile{overflow-wrap:anywhere}
+
+/* One-click setups live in the existing left inspector. */
+.example-list{display:grid;gap:12px}.example-card{display:grid;gap:8px;text-align:left;padding:16px;border:1px solid var(--line);border-radius:12px;width:100%;background:var(--surface,#fff)}.example-card .example-label{display:flex;justify-content:space-between;gap:10px;font-size:16px;font-weight:650;color:var(--ink)}.example-card>span:not(.example-label){font-size:12px;line-height:1.65;color:var(--muted)}.example-card small{font:10px var(--mono);color:var(--accent)}.example-card>b{font-size:11px;font-weight:600;color:var(--accent);padding-top:3px}.example-card:hover:not(:disabled){border-color:var(--accent);background:var(--raised,#f4f8f6)}.stop-example{border-style:dashed}.view-controls #showExamples{font-size:13px;padding:10px 18px}.module-draft .draft-title{margin:0}.module-draft{padding-top:10px;padding-bottom:10px}#applyImported{width:100%;margin-top:16px}
+
+.topbar #showExamples{font-size:12px;white-space:nowrap;padding:9px 13px;flex:none}

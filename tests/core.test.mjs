@@ -67,9 +67,9 @@ test('命令错误、读失败与格式错误不算成功',()=>{
  for(const s of ['E (123) A1: invalid state','Command returned non-zero error code: 0x1','  [0x0067] read failed: -1','Usage: set_rate <rate>'])assert.throws(()=>assertResponse(s));
  assert.throws(()=>validateStep({command:'dac_vol',expect:/DAC vol =/},'nothing\nesp32_a1 > '));
 });
-test('Codec 与声音钥匙协议不能混淆',()=>{
+test('未识别的调试接口不能开放参数控制',()=>{
  const h=REQUIRED.map(x=>x+'\n  description').join('\n')+'\nesp32_a1 > ';assert.equal(identifyCLI(h).size,REQUIRED.length);
- assert.throws(()=>identifyCLI('SOUND_KEY_STATUS connected=1'));
+ assert.throws(()=>identifyCLI('UNSUPPORTED_DEVICE_STATUS connected=1'));
 });
 test('ANSI 与分段提示符解析',()=>{
  assert.equal(hasPrompt('\x1b[32mesp32_a1 > \x1b[0m'),true);assert.equal(hasPrompt('esp32_a1 '),false);
@@ -150,4 +150,13 @@ test('active file tasks prevent closing their ADC or DAC path',()=>{
  assert.throws(()=>planFor('dac',c,{...newActual(),playing:true}),/停止播放/);
  assert.deepEqual(planFor('adc',c,{...newActual(),recording:false}).map(s=>s.command),['adc_off']);
  assert.deepEqual(planFor('dac',c,{...newActual(),playing:false}).map(s=>s.command),['dac_off']);
+});
+
+test('normal SDK VAD notifications do not abort a valid response; real errors still fail',()=>{
+ const notification='E (756785) ESP32_A1_INT: Interrupt status: 0x04 VAD\n';
+ const reply='@A1 {"type":"state"}\nesp32_a1 > ';
+ assert.match(assertResponse(notification+reply),/@A1/);
+ assert.throws(()=>assertResponse(notification+'E (756786) A1: read failed\n'+reply));
+ assert.throws(()=>assertResponse('E (756785) ESP32_A1_INT: Interrupt status: 0x05 CODEC VAD\n'+reply));
+ assert.throws(()=>assertResponse('E (756785) ESP32_A1_INT: Receive interrupt notification failed\n'+reply));
 });

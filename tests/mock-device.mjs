@@ -21,6 +21,16 @@ Object.defineProperty(navigator,'serial',{value:{requestPort:async()=>{
   }
   else if(a[0]==='adc_gain'){for(let i=0;i<4;i++)if(+a[2]&(1<<i))state.gainRegisters[i]=128+(+a[1])*2;response='ADC gain = '+a[1];}
   else if(a[0]==='iic_rd'){const addr=+a[1];response=`[0x${addr.toString(16).padStart(4,'0')}] = 0x${(state.gainRegisters[addr-0x67]??128).toString(16)}`;}
+  else if(a[0]==='set_rate'){state.rate=+a[1];response='Rate = '+a[1];}
+  else if(a[0]==='set_bits'){state.bits=+a[1];response='Bits = '+a[1];}
+  else if(a[0]==='set_ch'){state.channels=+a[1];response='ADC channels = '+a[1];}
+  else if(cmd==='i2s_on'){state.i2s=true;response=`I2S up: rate=${state.rate} bits=${state.bits} slots=${state.channels}`;}
+  else if(cmd==='i2s_off'){state.i2s=false;state.adc=false;state.dac=false;response='I2S channels down';}
+  else if(cmd==='adc_on'||cmd==='adc_off'){state.adc=cmd==='adc_on';response='ADC '+(state.adc?'on':'off')+' via esp_codec_dev';}
+  else if(a[0]==='adc_mute'){state.adcMute=!!+a[1];response='ADC mute = '+a[1];}
+  else if(a[0]==='dac_ref'){if(a.length>1){state.reference=!!+a[1];state.referenceChannel=+a[2];}response=`DAC ref${a.length>1?' =':':'} enable=${+state.reference} ref_dac_ch=0x${state.referenceChannel}`;}
+  else if(cmd==='vad_off'){state.vad=false;state.vadOutput=false;response='VAD stopped';}
+  else if(a[0]==='vad_on'){state.vad=true;state.vadOutput=a[1]==='out=1';response=`VAD started: rate=${state.rate} out=${state.vadOutput?'enabled':'disabled'}`;}
   else if(cmd)response='Error: simulated unsupported command';
   if(!closed)controller.enqueue(new TextEncoder().encode(response+'\nesp32_a1 > '));
  }});

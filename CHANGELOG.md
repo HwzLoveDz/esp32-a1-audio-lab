@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.8.0
+
+- Align VAD, TDM and DAC reference blocks with straight vertical branches in both diagrams.
+- Keep routine SDK VAD interrupt notifications from stopping live PCM monitoring.
+- Refresh the independent project introduction and current board screenshots.
+
+- Add six one-click board examples with ordered shutdown, setup and readback, including a ten-second SD recording and Stop all.
+- Add full configuration application after JSON import.
+- Keep unapplied edits local to each module; remove the global draft/device view switch and draft list. The map always follows device state.
+- Keep Quick start in the top bar, clear of floating panels; capture examples close the example picker and open live PCM.
+- Add example sequencing and failure-path tests plus [board and browser results](docs/validation-v0.8.0.md).
+
 ## 0.7.0
 
 - Separate I²S capture from SD writes with a bounded PSRAM queue, fixing sample loss during card-write stalls. Use exact sample-count targets and drain captured data on manual stop.
