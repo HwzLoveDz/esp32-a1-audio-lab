@@ -1,0 +1,159 @@
+{
+  "date": "2026-11-14",
+  "web": "0.8.3",
+  "firmware": "0.4.2",
+  "board": "ESP32-A1 Codec + ESP32-S31 EV Board",
+  "result": "PASS",
+  "artifactSha256": "123634e0f6eb0e455ab8604018e4c823de624ee4b96f0f9cc1295fe0f23e4d58",
+  "normalizedTextSha256": "df27d7568acb46c69b56f3e354fbb339cad993c1607dcdf4ef259b7eb61860e7",
+  "hardwareChecks": [
+    {
+      "name": "SD mount and inventory",
+      "result": "PASS"
+    },
+    {
+      "name": "Four physical MIC channels",
+      "result": "PASS"
+    },
+    {
+      "name": "Ten-second contiguous PCM window",
+      "result": "PASS"
+    },
+    {
+      "name": "ADC2 gain write and register readback",
+      "result": "PASS"
+    },
+    {
+      "name": "ADC mute and gain-cache recovery",
+      "result": "PASS"
+    },
+    {
+      "name": "Detection-only VAD keeps MIC PCM",
+      "result": "PASS"
+    },
+    {
+      "name": "Duplex and DAC reference layout",
+      "result": "PASS"
+    },
+    {
+      "name": "Ten-second stereo recording and full-file checksum",
+      "result": "PASS"
+    },
+    {
+      "name": "Playback with real DAC PCM",
+      "result": "PASS"
+    },
+    {
+      "name": "Simultaneous recording and playback",
+      "result": "PASS"
+    },
+    {
+      "name": "Manual stop finalizes WAV",
+      "result": "PASS"
+    },
+    {
+      "name": "Short-file host transfer and CRC",
+      "result": "PASS"
+    },
+    {
+      "name": "Stop all waits for active playback",
+      "result": "PASS"
+    },
+    {
+      "name": "Three browser recordings finalized with exact frames and CRC",
+      "result": "PASS"
+    },
+    {
+      "name": "Masked register write preserves other bits and restores value",
+      "result": "PASS"
+    },
+    {
+      "name": "Dedicated VAD FIFO saved and verified",
+      "result": "PASS"
+    }
+  ],
+  "browserRecordings": [
+    {
+      "rate": 16000,
+      "bits": 16,
+      "channels": 2,
+      "bytes": 640044,
+      "frames": 160000,
+      "crc32": "bd18f0e3",
+      "rxOverflows": 0
+    },
+    {
+      "rate": 16000,
+      "bits": 16,
+      "channels": 2,
+      "bytes": 1920044,
+      "frames": 480000,
+      "crc32": "12b19792",
+      "rxOverflows": 0
+    },
+    {
+      "rate": 16000,
+      "bits": 16,
+      "channels": 2,
+      "bytes": 19200044,
+      "frames": 4800000,
+      "crc32": "b6b98a15",
+      "rxOverflows": 0
+    }
+  ],
+  "browserUiChecks": [
+    {
+      "name": "ADC2 gain application",
+      "result": "PASS"
+    },
+    {
+      "name": "Detection-only VAD with 10-second MIC window",
+      "result": "PASS"
+    },
+    {
+      "name": "Duplex DAC and reference",
+      "result": "PASS"
+    },
+    {
+      "name": "Browser-started recording",
+      "result": "PASS"
+    },
+    {
+      "name": "Browser playback of recorded WAV",
+      "result": "PASS"
+    },
+    {
+      "name": "Stop all and example picker",
+      "result": "PASS"
+    }
+  ],
+  "nodeTests": 83,
+  "firmwareBufferTests": 7,
+  "browserQuality": {
+    "inputCases": 153,
+    "inputControls": 33,
+    "graphEntries": 34,
+    "workflows": 12,
+    "accessibilityScans": 25,
+    "stressActions": 300,
+    "generatedRuns": 7700
+  },
+  "screenshots": {
+    "theme": "Graphite",
+    "source": "live board",
+    "files": [
+      "01-capture-routing-v083.jpg",
+      "02-gain-live-pcm-v083.jpg",
+      "03-vad-long-window-v083.jpg",
+      "04-duplex-dac-v083.jpg",
+      "05-sd-recording-v083.jpg",
+      "06-quick-start-v083.jpg",
+      "07-file-playback-v083.jpg"
+    ]
+  },
+  "cleanup": {
+    "originalKnownDeviceStateRestored": true,
+    "taskRecordingsDeleted": true,
+    "serialClosed": true
+  }
+}

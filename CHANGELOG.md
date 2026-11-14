@@ -2,6 +2,9 @@
 
 ## 0.8.3
 
+- Complete current-board acceptance with firmware 0.4.2, including four MIC inputs, gain/readback, ten-second PCM, VAD FIFO, duplex/reference, SD recording/playback and full-file checksums.
+- Unify the bilingual homepage around the tested web/firmware pair and seven current Graphite hardware screenshots; retain earlier assets and records.
+
 - Use Mint on first launch and when theme storage is unavailable or invalid. Keep explicitly saved Light and dark themes, and apply the initial palette before the main application loads.
 - Add startup-theme regression coverage; the full web/protocol suite passes 83 tests.
 

@@ -2,122 +2,91 @@
 
 [中文](README.md) | **English**
 
-Configure an ESP32-A1 from its signal diagram: select a block, apply settings, read back device state, and inspect real PCM data.
+See the ESP32-A1 audio architecture, click a block to tune it, and check device state alongside real waveforms.
 
-![v0.8.2 professional routing in Mint with a simulated device](docs/assets/01-routing-mint-v082.jpg)
+![Four onboard microphones and the complete signal map, running on hardware](docs/assets/01-capture-routing-v083.jpg)
 
-Interface preview from v0.8.2 with simulated state and waveforms. The [board gallery](docs/board-gallery-v0.8.0.md) retains the hardware capture, playback and register-readback images.
+I built this tool to make chip debugging easier to follow. Capture, playback, VAD and reference routing share one map, so you can adjust a block where it sits in the signal path instead of hunting through code. Settings are read back after writing, and waveform samples come directly from the board's PCM stream.
 
-I built this tool to make ESP32-A1 debugging easier to follow. Trace capture, playback and reference signals on one diagram, select a block to tune it, then check its readback and waveform. The signal path gives each setting a place in the chip’s architecture.
+**Current versions: web v0.8.3 · debug firmware v0.4.2. Verified on an ESP32-A1 Codec + ESP32-S31 EV Board.** Every screenshot on this page shows this combination running on hardware, using the Graphite dark theme.
 
-Version **v0.8.2** uses English on first launch and remembers your English/Chinese preference. It targets the **ESP32-A1 Codec + ESP32-S31 EV Board**. SD recording uses **v0.4.2 buffered recording firmware**, with up to 30 minutes per file, live progress and selectable file playback. Web Serial connects the page to a compatible `a1_cli` host.
+## Tested on hardware
 
-## Try the interface
+| Function | Result |
+| --- | --- |
+| Four onboard microphones | Dynamic PCM on all four channels; per-channel gain, register readback, mute and recovery passed |
+| Live waveforms | A continuous ten-second window passed, containing 480,000 sample frames at 48 kHz |
+| VAD | Detection-only mode retained microphone capture; dedicated FIFO saved an 8 kHz / 16-bit / mono WAV with full-file verification |
+| Duplex audio | Four microphones, stereo DAC and RE reference enabled together |
+| Continuous SD recording | Browser-started 10-second, 30-second and five-minute recordings completed with exact frame counts, full-file CRC verification and zero RX overflows |
+| Playback and stopping | Recorded-file playback, DAC PCM, simultaneous recording/playback, manual stop and Stop all passed |
+| Registers and files | Masked writes preserved other bits and restored correctly; downloaded-file CRC matched the board |
 
-Download [ESP32-A1-Audio-Lab.html](https://github.com/HwzLoveDz/esp32-a1-audio-lab/raw/refs/heads/main/ESP32-A1-Audio-Lab.html) and open it in desktop Chrome or Edge. No installation is required. Without a device, explore the simple/professional diagrams and inspect the quick-start examples.
+![Live recording progress and the SD file list](docs/assets/05-sd-recording-v083.jpg)
 
-If Web Serial is unavailable on a local file page, serve the repository locally:
+The five-minute stereo recording at 16 kHz / 16-bit contains 4,800,000 frames in a complete 19,200,044-byte WAV. The panel shows sample progress and written size, then refreshes the list and selects the completed file.
+
+## Get started
+
+Download [ESP32-A1-Audio-Lab.html](https://github.com/HwzLoveDz/esp32-a1-audio-lab/raw/refs/heads/main/ESP32-A1-Audio-Lab.html). Start a local server in the same directory:
 
 ```sh
 python -m http.server 8773 --bind 127.0.0.1
 ```
 
-Open `http://127.0.0.1:8773/ESP32-A1-Audio-Lab.html`. Stop the server with Ctrl+C when finished.
+Open `http://127.0.0.1:8773/ESP32-A1-Audio-Lab.html` in desktop Chrome or Edge. Connect the board's data USB, click **Connect board** and choose its serial port. English and Mint are the first-run defaults; language and theme choices are saved. Press Ctrl+C to stop the local server when finished.
 
-**Hardware control requires compatible firmware already running on the board.** Basic controls use the vendor CLI. State synchronization, PCM preview and long windows require `web_status`, `web_scope` and `web_scope_window` respectively. This repository includes the project-authored extension sources and [integration instructions](firmware/README.md), but no complete vendor SDK or ready-to-flash firmware. The page does not flash the board.
+Use the debug firmware listed above; build instructions and pin configuration are in [Firmware integration](firmware/README.md). After connecting, the page reads the supported commands and device state. Choose a task from **Quick start** to configure the board.
 
-## Features
+![Quick start examples on the connected board](docs/assets/06-quick-start-v083.jpg)
 
-| Area | Controls |
+| Example | One-click setup |
 | --- | --- |
-| Routing | Simple/professional diagrams, left-click module selection, right-button panning, wheel zoom, fit/center beside panels and animated confirmed paths |
-| MIC / ADC | 1–4 capture channels, individual digital gain, mute and gain-register readback |
-| DAC | Stereo playback path, shared volume and mute |
-| Shared format | SDK-supported discrete rates from 8 to 48 kHz, 16/24-bit samples and TDM channel count |
-| Waveforms | Real PCM RMS, peak and min/max envelopes; linear slider and numeric input from 5 to 10000 ms |
-| Layout | Automatic vertical scaling, wheel-controlled manual scaling, Auto reset and resizable panels |
-| VAD / RE | ADC0 voice-activity detection and events; left/right DAC selection for the RE reference slot |
-| Board files | Up to 30-minute buffered recording, live capture progress and written size, unique names, file selection, WAV format checks and VAD FIFO saving |
-| Configuration | JSON import/export, restricted masked register writes and communication-log export |
+| Four microphones | 48 kHz / 24-bit, four inputs, 0 dB and live PCM |
+| Voice and VAD | 16 kHz / 16-bit, one input at +6 dB, detection-only VAD and live PCM |
+| Record 10 seconds | Configure two inputs, mount SD and start recording |
+| File playback | Configure stereo DAC at volume 20 and read the SD file list |
+| Duplex and reference | Configure four microphones, stereo DAC and the left-channel RE reference |
+| Stop all audio | Stop file tasks and monitoring, then close audio paths; keep SD files |
 
-Six themes are included: light, mint, graphite, ocean, pine and ember. Preferences stay in browser storage. The page loads no CDN resources, remote fonts or analytics.
+## Tune from the map
 
-Hold the right mouse button and drag to pan. The wheel zooms at the pointer. The four-corner icon beside the zoom buttons fits and centers the diagram in the area left clear by floating panels; Home does the same. Panning is bounded, and device-state refreshes preserve manual placement.
+Simple mode keeps the main paths visible. Professional mode expands all four ADC channels, gains and VAD. Click a block to open its settings on the left, then apply to write and read back. Moving a slider or entering a number does not immediately change the board. The map follows device responses, with flowing animation on enabled links.
 
-![DAC reference settings in the simple diagram, Graphite theme, simulated device](docs/assets/04-simple-reference-v082.jpg)
+Right-drag to pan and use the wheel to zoom around the pointer. The fit icon beside the zoom buttons centers the map in the area left clear by the panels; Home does the same. Drag panel dividers to resize them.
 
-The simple diagram keeps the main signal paths; the professional diagram expands the four ADC channels, gains and VAD. DAC Reference takes one playback channel back into TDM as a reference signal. It does not run an AEC algorithm.
+![ADC2 +6 dB readback and its actual PCM waveform](docs/assets/02-gain-live-pcm-v083.jpg)
 
-## Start with an example
+The waveform window spans **5 ms–10 s**, with a linear slider and numeric input. It shows RMS, peak and min/max envelopes. Vertical scaling starts in Auto; the wheel switches to manual scaling and **Auto** restores it. Panels adapt to screen height and can also be resized manually.
 
-Choose **Quick start** in the top bar to configure and verify the board without opening each module. Capture examples open the live waveform automatically. Select a diagram node when you want to tune a parameter.
+![Detection-only VAD with a ten-second microphone window](docs/assets/03-vad-long-window-v083.jpg)
 
-| Example | What it applies |
-| --- | --- |
-| Four microphones | 48 kHz / 24-bit, four inputs at 0 dB and the ADC0 waveform |
-| Voice and VAD | 16 kHz / 16-bit, one input at +6 dB, detection-only VAD and a live waveform |
-| Record 10 seconds | 16 kHz / 16-bit stereo input, SD mount and immediate recording |
-| Prepare file playback | 16 kHz / 16-bit stereo DAC at volume 20 and the file list; select a matching WAV to play |
-| Duplex and reference | Four MICs, stereo DAC and the left-channel RE reference |
-| Stop all audio | Stop file tasks and monitoring, then close VAD, ADC, DAC and I²S; keep SD files |
+Use **detection-only** VAD for ordinary microphone capture. Dedicated filtered output provides the VAD FIFO; stop ordinary capture and file tasks before switching. The page handles these dependencies to keep the paths consistent.
 
-![v0.8.2 quick-start examples with a simulated device](docs/assets/03-quick-start-v082.jpg)
+![Simple map with DAC volume, duplex capture and RE reference](docs/assets/04-duplex-dac-v083.jpg)
 
-Switching closes the previous paths, applies settings in dependency order and checks responses. Active file tasks block switching; Stop all waits for file tasks to stop before closing their paths. SD examples need an inserted card. Recording requires buffered firmware v0.4.2 or newer.
+DAC Reference selects either output channel for the TDM RE slot, making the playback reference visible in the capture path. The shared format supports the SDK's discrete 8–48 kHz rates, 16/24-bit samples and TDM channel settings.
 
-Editing still requires **Apply**: moving a slider or typing a value does not immediately change the device. Only the current module shows unapplied edits and an Undo action; the diagram always follows device responses. Imported JSON configurations have an **Apply full configuration** action.
+## SD files and configurations
 
-![ADC2 gain readback and matching waveform with a simulated device](docs/assets/02-gain-waveform-v082.jpg)
+Mount microSD in the ESP32-S31 panel and enable ADC to record. Each recording gets a unique filename and can run for 1–1800 seconds. Manual stop drains captured data and finalizes the WAV header. Reserve space for the selected rate, depth and channel count, and finish file tasks before unmounting.
 
-Select ADC2 to adjust its digital gain and verify the register on the left while viewing the same channel’s PCM on the right. Blank or invalid integer values block Apply. The time window spans 5 ms to 10 s; Auto restores vertical scaling after wheel adjustment.
+Select a mono or stereo PCM WAV from the list to prepare playback. Its rate and bit depth must match the current clock; the page checks the format. Extract the desired channels on a computer before playing a multichannel recording.
 
-## Connect a board
+![Playing the five-minute recording and viewing real DAC PCM](docs/assets/07-file-playback-v083.jpg)
 
-1. Connect the EV Board's USB data port, click the connection button and select the actual serial port.
-2. The page reads the prompt and `help` at 115200 baud before enabling commands. Connecting does not start audio.
-3. Configure the format in the clock block. Stop VAD, ADC, DAC and I²S before changing the shared format or RE layout.
-4. Enable ADC in the MIC block, leave ADC mute off and apply settings. The page starts I²S first when needed.
-5. Start waveform capture. A 0 dB digital gain is usable; adjust individual gains if more digital level is needed.
+Import and export JSON configurations, then choose **Apply full configuration** to send imported settings. The register tool provides address-limited masked writes and readback. Export communication logs for troubleshooting. All page resources are included locally, with no CDN, remote fonts or analytics.
 
-Importing a configuration loads parameters for review. Commands are sent when you click Apply full configuration. Animated paths indicate confirmed enable state; waveform data and levels establish whether capture data is changing.
+## Connection tips
 
-### Two VAD modes
+- Keep the serial port open in only one application at a time.
+- Start waveform monitoring after enabling a path. Check ADC mute and use detection-only VAD for ordinary capture.
+- If Windows serial stops responding after flashing, keep POWER connected and reconnect only the data USB.
+- Disconnecting serial leaves board tasks running; use **Stop all audio** before disconnecting when you want them stopped.
 
-Use **detection only** for ordinary MIC capture: enable VAD and leave filtered output off. Four-channel capture remained dynamic before and after detection toggles, with RE both enabled and disabled.
+## Development and verification
 
-Filtered VAD output takes over the I²S stream; it is not four independent MIC channels. The UI requires waveform monitoring, recording/playback and ADC/DAC to be stopped before enabling this dedicated mode, and blocks ordinary MIC monitoring while it runs. Mixing it with an RE capture layout has produced fixed-valued slots and is not supported by the UI.
-
-### Record and play SD files
-
-Mount microSD from the ESP32-S31 block, enable ADC, then start recording. The file list refreshes after completion and selects the new recording. Read the list manually to choose an existing file. Every recording uses a unique name.
-
-Direct playback accepts mono or stereo PCM WAV. Set the shared sample rate and bit depth to match the file, then enable DAC; the page checks the format before playback. Extract playback channels on a computer from four-MIC-plus-RE recordings. Firmware v0.4.2 uses exact sample-count targets. Manual stop drains captured data and finalizes the WAV header. The recording card shows actual sample progress and written size. A 30-minute recording at 48 kHz / 24-bit with four MIC channels plus RE uses about 1.30 GB; reserve enough card space.
-
-FIFO saving requires mounted SD, enabled VAD and dedicated filtered output. Detection-only mode can still prepare triggered recording but cannot read that FIFO. Stop recording and playback before unmounting SD.
-
-## Board results
-
-The [board gallery](docs/board-gallery-v0.8.0.md) was captured with web v0.8.0 and debug firmware v0.4.2. It includes four-channel capture, ADC2 +6 dB readback, a ten-second PCM window, DAC reference routing, SD recording progress and quick-start examples. Current interface previews and these hardware results carry their respective versions.
-
-## Test results
-
-This version passes **82 web/protocol tests**. Browser checks cover 153 input cases across 33 controls, 34 diagram entries, 12 workflows and six themes, supplemented by 7,700 generated property/model runs and 300 seeded interaction steps. See the [v0.8.2 browser review](docs/validation-v0.8.2.md).
-
-The seven firmware recording-module tests and hardware results remain in their versioned records. The [v0.8.0 example checks](docs/validation-v0.8.0.md) retain the board results. The [v0.7.0 board record](docs/validation-v0.7.0.md) covers a 30-minute high-rate recording, full-file readback and CRC32, simultaneous recording/playback, stopping and restarting.
-
-The buffered pipeline separates I²S capture from SD writes so short card stalls do not interrupt sampling. Host regression tests inject 250 ms writes, exhausted buffers, read/write failures, cancellation and resource-allocation failure. Earlier capture, gain and VAD runs are retained in [v0.5.0](docs/validation-v0.5.0.md) and [v0.6.0](docs/validation-v0.6.0.md).
-
-## Troubleshooting
-
-- **MIC startup returns 0x108:** configure the board's active-low Codec reset pin when creating the first Codec instance. A separately powered A1 can retain clock state across MCU resets.
-- **Four-channel capture returns 0x106 after starting DAC:** TX/RX must use the same physical TDM frame width. Keep the DAC payload mask limited to its playback channels.
-- **Enabled path, no input:** check ADC mute, capture enable state and dedicated VAD output mode, then start capture. Long windows need enough fresh history to fill.
-- **Windows serial stops responding after flashing:** on the tested board, keeping POWER connected and reconnecting only the data USB restored communication. A serial port cannot be shared with another open client.
-- **Audio continues after closing the page:** disconnecting does not stop board-side ADC/DAC or file tasks. Stop them from the relevant module first when required.
-
-## Development
-
-Use Node.js 22 or newer and install the locked development dependencies:
+Use Node.js 22 or newer:
 
 ```sh
 npm ci --ignore-scripts
@@ -125,14 +94,10 @@ npm test
 npm run build
 ```
 
-The firmware recording-module tests use a C11 compiler and POSIX threads. Run `sh tests/run-firmware-tests.sh` on Linux or WSL.
+The build produces the standalone HTML. Entry points are `index.html` and `app.mjs`; transport is in `serial.mjs`, state and parameters in `core.mjs`, and diagrams in `graph.mjs`. Run `sh tests/run-firmware-tests.sh` on Linux / WSL for the recording-buffer tests.
 
-The build produces the standalone `ESP32-A1-Audio-Lab.html`. UI entry points are `index.html` and `app.mjs`; `serial.mjs` handles transport, `core.mjs` handles settings/state, and `graph.mjs` renders routing. See the [protocol](docs/protocol.md), [firmware integration](firmware/README.md) and [changelog](CHANGELOG.md).
-
-When reporting a problem, include web/firmware versions, board type, startup order and error response. Remove unique device identifiers and unrelated audio before posting.
-
-For browser development, run `npm run test:browser` and open the printed HTTP test URL. The fake device takes over transport before application startup; these pages cannot access native serial, USB or microphone interfaces. `/preview.html` provides the interactive preview without the audit toolbar. See the [quality plan](docs/quality-plan.md) for the full checks and reproduction steps.
+All **83 web/protocol tests** and **seven firmware-buffer tests** passed. Browser checks covered 153 input cases, 34 diagram entries, 12 workflows, six themes, both languages and narrow windows. Hardware results and reproduction details are collected in the [current validation record](docs/validation-v0.8.3.md). See also the [CLI / telemetry protocol](docs/protocol.md), [quality checks](docs/quality-plan.md) and [changelog](CHANGELOG.md).
 
 ## License
 
-The project-authored web application, documentation and telemetry extensions use the [MIT License](LICENSE). Obtain external SDKs, Codec drivers and board documents under their respective licenses; they are not distributed here. See [THIRD_PARTY.md](THIRD_PARTY.md).
+Project-authored web code, documentation and telemetry extensions use the [MIT License](LICENSE). Obtain external SDKs, Codec drivers and board materials under their respective licenses; see [THIRD_PARTY.md](THIRD_PARTY.md).
